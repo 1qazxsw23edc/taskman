@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
+    <item android:id="@+id/new_action"
+        android:title="@string/new_action_string"
+        android:icon="@drawable/add_action" />
+    <item android:id="@+id/remove_place"
+        android:title="Remove"/>
+</menu>
