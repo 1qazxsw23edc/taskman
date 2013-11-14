@@ -26,6 +26,8 @@ public class Place implements Serializable {
     private String airplane = "";
     @SerializedName("vibrate")
     private String vibrate = "";
+    @SerializedName("id")
+    private String id = null;
 
     public String getName() {
         return name;
@@ -35,6 +37,12 @@ public class Place implements Serializable {
         this.name = name;
     }
 
+
+    //Unique identifier
+    public void setId(String id) { this.id = id;}
+
+    public String getId() { return id;}
+
     /*
     Manage storing and retrieving geofences
      */
@@ -43,7 +51,7 @@ public class Place implements Serializable {
         fence.put("id", id);
         fence.put("lat", new Double(lat));
         fence.put("lon", new Double(lon));
-        fence.put("radius", new Float(radius));
+        fence.put("radius", new Double(radius));
         fence.put("expir", new Long(expir));
         fence.put("trans", new Integer(trans));
     }
@@ -53,10 +61,13 @@ public class Place implements Serializable {
             String id = (String)fence.get("id");
             double lat = ((Double)fence.get("lat"));
             double lon = ((Double)fence.get("lon"));
-            float radius = ((Float)fence.get("radius"));
-            long expir = ((Long)fence.get("expir"));
-            int trans = ((Integer)fence.get("trans"));
-            if (
+            double radius = ((Double)fence.get("radius"));
+            //long expir = ((Long)fence.get("expir"));
+            long expir = 0l;
+            //int trans = ((Integer)fence.get("trans"));
+            int trans = 0;
+            return new SimpleGeoFence(id, lat, lon, radius, expir, trans);
+            /*if (
                     lat != INVALID_FLOAT_VALUE &&
                     lon != INVALID_FLOAT_VALUE &&
                     radius != INVALID_FLOAT_VALUE &&
@@ -66,7 +77,7 @@ public class Place implements Serializable {
                 return new SimpleGeoFence (id, lat, lon, radius, expir, trans);
             } else {
                 return null;
-            }
+            }*/
         } else {
             return null;
         }

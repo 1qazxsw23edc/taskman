@@ -3,10 +3,13 @@ package com.charles.taskmantest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
@@ -21,20 +24,19 @@ import android.widget.ListView;
 import com.charles.taskmantest.Fragments.MyMap;
 import com.charles.taskmantest.datahandler.JSONManager;
 import com.charles.taskmantest.geofence.CheckServices;
-import com.google.android.gms.maps.GoogleMap;
+import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
 
 import java.util.ArrayList;
 
 
-public class MainActivity extends Activity {
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+public class MainActivity extends Activity implements UpdatePlacesCallBack, LoaderManager.LoaderCallbacks<Cursor> {
+    private static DrawerLayout mDrawerLayout;
+    private static ListView mDrawerList;
     private SharedPreferences mPreferences;
     private JSONManager jsonManager;
-    private PlacesListAdapter adapter;
-    private Place currentPlace = null;
-    private GoogleMap gmap = null;
-    private MyMap mapFragment = null;
+    private static PlacesListAdapter adapter;
+    private static Place currentPlace = null;
+    private static MyMap mapFragment = null;
 
 
     @Override
@@ -62,12 +64,12 @@ public class MainActivity extends Activity {
 
         //Construct a new MapFragment, this will start the initialization process to create a viewable map
         mapFragment = new MyMap();
+        mapFragment.setUpdatePlacesCallback(this);
 
         //Create the header with the name "Places" and the plus sign
         View header = (View)getLayoutInflater().inflate(R.layout.drawer_header, null);
         mDrawerList.addHeaderView(header);
-
-        createButtons();
+        initPlaces();
 
     }
 
@@ -140,16 +142,36 @@ public class MainActivity extends Activity {
     Show an alert to ask for the name of the new place they want to add
      */
     private void addPlacesPressed() {
-        createNewPlaceDialog();
-        /*FragmentManager fm = getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft = fm.beginTransaction();
-        ft.replace(R.id.content_view, mapFragment, "MAP_FRAGMENT");
-        ft.commit();*/
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("New Place");
+        alert.setMessage("Add a New Place");
+        //Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        alert.setView(input);
+
+        alert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String value = input.getText().toString();
+                Place p = new Place();
+                p.setName(value);
+                mapFragment.newPlace(p);
+
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                return;
+            }
+        });
+        alert.show();
+
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
-    private void createButtons() {
+    private void initPlaces() {
         ArrayList<Place> places = jsonManager.getTasks();
         ImageButton addPlacesButton = (ImageButton)findViewById(R.id.add_place_button);
         addPlacesButton.setOnClickListener(
@@ -172,32 +194,32 @@ public class MainActivity extends Activity {
                 mDrawerLayout.closeDrawer(mDrawerList);
             }
         });
+
+        mapFragment.drawPlaces(places);
     }
 
-    private void createNewPlaceDialog() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("New Place");
-        alert.setMessage("Add a New Place");
-        //Set an EditText view to get user input
-        final EditText input = new EditText(this);
-        alert.setView(input);
+    @Override
+    public void updatePlaces(Place place) {
+        adapter.add(place);
+    }
 
-        alert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String value = input.getText().toString();
-                Place p = new Place();
-                p.setName(value);
-                adapter.add(p);
-            }
-        });
+    @Override
+    public Place getPlaceById(String id) {
+        return adapter.getPlaceById(id);
+    }
 
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                return;
-            }
-        });
-        alert.show();
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

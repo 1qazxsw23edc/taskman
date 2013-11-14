@@ -1,15 +1,19 @@
 package com.charles.taskmantest.Fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.charles.taskmantest.Place;
 import com.charles.taskmantest.datahandler.JSONManager;
 import com.charles.taskmantest.geofence.SimpleGeoFence;
+import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
@@ -30,19 +34,21 @@ import java.util.HashMap;
 /**
  * Created by charles on 10/16/13.
  */
-public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
-    private GoogleMap gmap = null;
+public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener{
+    private static GoogleMap gmap = null;
     final int RQS_GooglePlayServices = 1;
-    private int distance;
-    private LocationManager mLocManager;
-    private LocationListener myLocationListener;
-    private LocationClient mLocationClient;
-    private double lat;
-    private double lon;
+    private static int distance = 100;
+    private static LocationManager mLocManager;
+    private static LocationListener myLocationListener;
+    private static LocationClient mLocationClient;
+    private static Location loc = null;
+    protected static volatile double lat;
+    protected static volatile double lon;
     private boolean currentLocationSet = false;
     private JSONManager jsonManager =null;
-    private HashMap<Marker, Circle> fencesMap = new HashMap<Marker, Circle>();
-    private ArrayList<Place> places = new ArrayList<Place>();
+    private static HashMap<Marker, Circle> fencesMap = new HashMap<Marker, Circle>();
+    private static Activity mActivity;
+    private static UpdatePlacesCallBack upc = null;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -56,7 +62,7 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
                     gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                     gmap.setOnMarkerDragListener(this);
                     gmap.setMyLocationEnabled(true);
-                    gmap.setOnMapLongClickListener(this);
+                    //gmap.setOnMapLongClickListener(this);
                 }else{
                     return;
                 }
@@ -68,7 +74,12 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         myLocationListener = new MyLocationListener();
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
         jsonManager = JSONManager.getInstance();
-        places = jsonManager.getTasks();
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mActivity = activity;
     }
 
     @Override
@@ -80,13 +91,16 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
     @Override
     public void onResume() {
         super.onResume();
-        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0l,0.0f, myLocationListener);
-        mLocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
+        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500,10, myLocationListener);
+        mLocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 10, myLocationListener);
         mLocManager.getLastKnownLocation(Context.LOCATION_SERVICE);
+
     }
 
     @Override
     public void onMarkerDragStart(Marker marker){
+        Circle c = fencesMap.get(marker);
+        c.remove();
 
     }
 
@@ -101,7 +115,7 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         double dragLat = dragPosition.latitude;
         double dragLon = dragPosition.longitude;
         Circle circle = fencesMap.get(marker);
-        Place place = jsonManager.getPlace(marker.getTitle());
+        Place place = upc.getPlaceById(marker.getId());
         place.setGeofence(marker.getTitle(), dragLat, dragLon, circle.getRadius(), 0, 0);
         if (marker != null) marker.remove();
         if (circle != null) circle.remove();
@@ -109,46 +123,19 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         createGeoFence(place);
     }
 
-    @Override
+    /*@Override
     public void onMapLongClick(LatLng latLng) {
         createGeoFence(latLng.latitude, latLng.longitude, distance, "CIRCLE", "A clever title");
-    }
-
-    private void zoomHome() {
-        gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lon), 15));
-    }
+    }*/
 
     //Create the actual drawn geofences on the map
-
-    private void createGeoFence(double latitude, double longitude, int radius, String geoFenceType, String title) {
-
-        Marker fence = gmap.addMarker(new MarkerOptions()
-            .draggable(true)
-            .position(new LatLng(latitude, longitude))
-            .title(title)
-            .icon(BitmapDescriptorFactory.defaultMarker())
-        );
-
-        Circle circle = gmap.addCircle(new CircleOptions()
-            .center(new LatLng(latitude, longitude))
-            .radius(radius)
-            .fillColor(0x40ff0000)
-            .strokeColor(Color.BLACK)
-            .strokeWidth(2)
-        );
-        fencesMap.put(fence, circle);
-    }
-
-    private void createGeoFence(String geoFenceType, String title) {
-
-    }
-
     private void createGeoFence(Place place) {
         SimpleGeoFence sgf = place.getGeoFence();
         double latitude = sgf.getLatitude();
         double longitude = sgf.getLongitude();
         String title = place.getName();
         double size = sgf.getRadius();
+        Log.v("Magic", Double.toString(size));
 
         Marker fence = gmap.addMarker(new MarkerOptions()
             .draggable(true)
@@ -156,7 +143,6 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
             .title(title)
             .icon(BitmapDescriptorFactory.defaultMarker())
         );
-
         Circle circle = gmap.addCircle(new CircleOptions()
               .center(new LatLng(latitude,longitude))
               .radius(size)
@@ -164,7 +150,15 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
               .strokeColor(Color.BLACK)
               .strokeWidth(2)
         );
+        place.setId(fence.getId());
         fencesMap.put(fence, circle);
+    }
+
+    //Create a new Place, plot it on the map and then update the list to reflect those changes by using a callback
+    public void newPlace(Place p) {
+        Log.v("Magic", "Name: " + p.getName() + "\nLat: " + Double.toString(lat) + "\nLon:" + Double.toString(lon));
+        new ConstructPlaceTask().execute(p);
+        upc.updatePlaces(p);
     }
 
     //Listen for location changes and update the map with that information
@@ -174,11 +168,13 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         public void onLocationChanged(Location location) {
             lat = location.getLatitude();
             lon = location.getLongitude();
+
+
+            Log.v("Magic", "LOCATION CHANGED!" + "\nLat: " + Double.toString(lat) + "\nLon: " +  Double.toString(lon));
             if (!currentLocationSet) {
-                zoomHome();
+                gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lon), 15));
                 currentLocationSet = true;
             }
-            //Log.v("TaskMan", "LAT" + Double.toString(lat) + " LONG" + Double.toString(lon));
         }
 
         @Override
@@ -202,8 +198,47 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         @Override
         public boolean onMarkerClick(Marker marker) {
             String title = marker.getTitle();
-            Place place = jsonManager.getPlace(title);
+            Place place = upc.getPlaceById(marker.getId());
             return false;
+        }
+    }
+
+    public void setUpdatePlacesCallback(UpdatePlacesCallBack upc) {
+        this.upc = upc;
+    }
+
+    public void drawPlaces(ArrayList<Place> places) {
+        Place [] ps = new Place[places.size()];
+        places.toArray(ps);
+        Log.v("Magic", Integer.toString(ps.length));
+        new ConstructPlaceTask().doInBackground(ps);
+    }
+
+    private class ConstructPlaceTask extends AsyncTask<Place, Integer, Place[]> {
+
+        @Override
+        protected Place[] doInBackground(Place... params) {
+            for (int i = 0; i < params.length; i++) {
+                Place p = params[0];
+                if (p.getGeoFence() == null) {
+                    p.setGeofence(p.getName(),lat, lon, distance, 0, 0);
+                    Log.v("Magic", "Name: " + p.getName() + "\nLat: " + Double.toString(MyMap.this.lat) + "\nLon:" + Double.toString(MyMap.this.lon));
+                }
+                publishProgress(i);
+            }
+            return params;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... item) {
+            Log.v("Magic", "Processed: " + Integer.toString(item[0]) +" fences");
+        }
+
+        @Override
+        protected void onPostExecute(Place[] result) {
+            for (int i = 0; i < result.length; i++) {
+                createGeoFence(result[i]);
+            }
         }
     }
 }

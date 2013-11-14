@@ -54,6 +54,13 @@ public class PlacesListAdapter extends ArrayAdapter<Place> {
         return v;
     }
 
+    public Place getPlaceById(String id) {
+        for (Place place : places) {
+            if (place.getId().equals(id)) return place;
+        }
+        return null;
+    }
+
     public ArrayList<Place> getPlaces() {
         return places;
     }

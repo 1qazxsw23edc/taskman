@@ -30,7 +30,7 @@ public class JSONManager {
         //Setup shared preferences
         mPreferences = context.getSharedPreferences("com.charles.TaskManTest", Activity.MODE_PRIVATE);
         if (mPreferences.getBoolean("firstrun", true)) {
-            initJSON();
+            //initJSON();
         }
     }
 

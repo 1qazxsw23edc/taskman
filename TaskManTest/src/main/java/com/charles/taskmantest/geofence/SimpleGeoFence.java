@@ -10,7 +10,7 @@ public class SimpleGeoFence {
             private final String mId;
             private final double mLatitude;
             private final double mLongitude;
-            private final float mRadius;
+            private final double mRadius;
             private long mExpirationDuration;
             private int mTransitionType;
 
@@ -26,7 +26,7 @@ public class SimpleGeoFence {
                 String geofenceId,
                 double latitude,
                 double longitude,
-                float radius,
+                double radius,
                 long expiration,
                 int transition) {
             // Set the instance fields from the constructor
@@ -47,7 +47,7 @@ public class SimpleGeoFence {
         public double getLongitude() {
             return mLongitude;
         }
-        public float getRadius() {
+        public double getRadius() {
             return mRadius;
         }
         public long getExpirationDuration() {
@@ -64,11 +64,11 @@ public class SimpleGeoFence {
          */
         public Geofence toGeofence() {
             // Build a new Geofence object
+            float rad = (float)getRadius();
             return new Geofence.Builder()
                     .setRequestId(getId())
                     .setTransitionTypes(mTransitionType)
-                    .setCircularRegion(
-                            getLatitude(), getLongitude(), getRadius())
+                    .setCircularRegion(getLatitude(), getLongitude(), rad)
                     .setExpirationDuration(mExpirationDuration)
                     .build();
         }
