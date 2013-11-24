@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.charles.taskmantest.Place;
-import com.charles.taskmantest.datahandler.JSONManager;
 import com.charles.taskmantest.geofence.SimpleGeoFence;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
 import com.google.android.gms.common.ConnectionResult;
@@ -45,7 +44,6 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
     protected static volatile double lat;
     protected static volatile double lon;
     private boolean currentLocationSet = false;
-    private JSONManager jsonManager =null;
     private static HashMap<Marker, Circle> fencesMap = new HashMap<Marker, Circle>();
     private static Activity mActivity;
     private static UpdatePlacesCallBack upc = null;
@@ -73,7 +71,6 @@ public class MyMap extends MapFragment implements GoogleMap.OnMarkerDragListener
         distance = 100;
         myLocationListener = new MyLocationListener();
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-        jsonManager = JSONManager.getInstance();
     }
 
     @Override

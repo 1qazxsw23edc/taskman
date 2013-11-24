@@ -16,16 +16,12 @@
         android:layout_width="match_parent"
         class="com.charles.taskmantest.Fragments.MyMap"/>
 
-    <!--The drawer-->
-    <ListView android:id="@+id/drawer_view"
-        android:layout_width="200dp"
+    <fragment
+        android:id="@+id/drawer_view"
+        android:name="com.charles.taskmantest.Fragments.DrawerListFragment"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:background="#9E9E9E"/>
-
+        android:layout_gravity="start"/>
 
 
 </android.support.v4.widget.DrawerLayout>

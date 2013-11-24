@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,7 +29,7 @@ public class TaskManContentProvider extends ContentProvider {
     private static final int EGRESS = 50;
     private static final int EGRESS_ID = 60;
 
-    private static final String AUTHORITY = "com.charles.taskmantest.TaskManContentProvider";
+    private static final String AUTHORITY = "com.charles.taskmantest.datahandler.TaskManContentProvider";
 
     private static final String FENCE_PATH = "fences_table";
     public static final Uri FENCE_URI = Uri.parse("content://" + AUTHORITY + "/" + FENCE_PATH);
@@ -50,10 +51,12 @@ public class TaskManContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, INGRESS_PATH, INGRESS);
         sURIMatcher.addURI(AUTHORITY, INGRESS_PATH + "/#", INGRESS_ID);
         sURIMatcher.addURI(AUTHORITY, EGRESS_PATH, EGRESS);
-        sURIMatcher.addURI(AUTHORITY, EGRESS_PATH, EGRESS_ID);
+        sURIMatcher.addURI(AUTHORITY, EGRESS_PATH + "/#", EGRESS_ID);
     }
     public boolean onCreate() {
+        Log.v("Content Provider", "Content Provider Created");
         database = new TaskManDatabaseHelper(getContext());
+        database.getWritableDatabase();
         return false;
     }
 
@@ -126,6 +129,7 @@ public class TaskManContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
+        Log.v("Insertion", "Successful Insertion");
         return returnUri;
     }
 
@@ -234,7 +238,7 @@ public class TaskManContentProvider extends ContentProvider {
 
     private void checkColumns(String[] projection) {
         String[] available = {GeoFenceTable.LONGITUDE, GeoFenceTable.LATITUDE, GeoFenceTable.EXPIRATION,
-        GeoFenceTable.ID, GeoFenceTable.RADIUS, GeoFenceTable.TRANSITION, EgressTable.AIRPLANE, EgressTable.ID,
+        GeoFenceTable.ID, GeoFenceTable.RADIUS, GeoFenceTable.TRANSITION, GeoFenceTable.NAME, EgressTable.AIRPLANE, EgressTable.ID,
         EgressTable.SMS, EgressTable.SOUND, EgressTable.TIMEFRAME, EgressTable.WIFI, IngressTable.AIRPLANE,
         IngressTable.ID, IngressTable.SMS, IngressTable.TIMEFRAME, IngressTable.SOUND, IngressTable.WIFI};
 
@@ -243,7 +247,7 @@ public class TaskManContentProvider extends ContentProvider {
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
             //check if all columns which are requested are available
             if (!availableColumns.containsAll(requestedColumns)) {
-                throw new IllegalArgumentException("Unknown columns in pojrection");
+                throw new IllegalArgumentException("Unknown columns in projection");
             }
         }
     }

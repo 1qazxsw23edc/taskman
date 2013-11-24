@@ -7,9 +7,8 @@ import android.util.Log;
  * Created by charles on 11/10/13.
  */
 public class EgressTable {
-
-    public static final String EGRESS_TABLE = "ingress_table";
-    public static final String ID = "id";
+    public static final String EGRESS_TABLE = "egress_table";
+    public static final String ID = "_id";
     public static final String AIRPLANE = "airplane";
     public static final String WIFI = "wifi";
     public static final String SMS = "sms";
@@ -19,15 +18,16 @@ public class EgressTable {
     private static final String DATABASE_CREATE = "create table "
             + EGRESS_TABLE
             +"("
-            + ID + " text primary key not null, "
+            + ID + " integer primary key not null, "
             + AIRPLANE + " integer, "
             + WIFI + " text, "
             + SMS + " text, "
             + TIMEFRAME + " text, "
-            + SOUND  + " text, "
+            + SOUND  + " text "
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {
+        Log.v("SQL", DATABASE_CREATE);
         database.execSQL(DATABASE_CREATE);
     }
 

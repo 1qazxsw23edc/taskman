@@ -9,18 +9,20 @@ import android.util.Log;
 public class GeoFenceTable {
 
     public static final String TABLE_GEOFENCE = "fences_table";
-    public static final String ID = "id";
+    public static final String ID = "_id";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String RADIUS = "radius";
     public static final String EXPIRATION = "exipiration";
     public static final String TRANSITION = "transition";
+    public static final String NAME = "name";
 
 
     private static final String DATABASE_CREATE = "create table "
             + TABLE_GEOFENCE
             +"("
-            + ID + " text primary key not null, "
+            + ID + " integer primary key not null, "
+            + NAME + " text, "
             + LATITUDE + " real not null, "
             + LONGITUDE + " real not null, "
             + RADIUS + " real not null, "

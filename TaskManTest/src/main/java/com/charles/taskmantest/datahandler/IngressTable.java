@@ -8,7 +8,7 @@ import android.util.Log;
  */
 public class IngressTable {
     public static final String INGRESS_TABLE = "ingress_table";
-    public static final String ID = "id";
+    public static final String ID = "_id";
     public static final String AIRPLANE = "airplane";
     public static final String WIFI = "wifi";
     public static final String SMS = "sms";
@@ -18,12 +18,12 @@ public class IngressTable {
     private static final String DATABASE_CREATE = "create table "
             + INGRESS_TABLE
             +"("
-            + ID + " text primary key not null, "
+            + ID + " integer primary key not null, "
             + AIRPLANE + " integer, "
             + WIFI + " text, "
             + SMS + " text, "
             + TIMEFRAME + " text, "
-            + SOUND  + " text, "
+            + SOUND  + " text "
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {
