@@ -5,67 +5,69 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.TextView;
 
 import com.charles.taskmantest.R;
+import com.google.android.gms.maps.model.LatLng;
+import com.javadocmd.simplelatlng.LatLngTool;
+import com.javadocmd.simplelatlng.util.LengthUnit;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by charles on 11/29/13.
  */
-public class LocationSelection extends Fragment implements TextWatcher, AdapterView.OnItemSelectedListener {
-    private static final int MESSAGE_TEXT_CHANGED = 0;
-    private static final int AUTOCOMPLETE_DELAY = 500;
-    private static final int THRESHOLD = 3;
-    private String latitude, longitude;
-    private List<Address> autoCompleteSuggestionAddresses;
+public class LocationSelection extends Fragment {
+
     private static ArrayAdapter<String> autoCompleteAdapter;
-    private static Handler messageHandler;
     private View v;
     private LocationSelectionCallbacks lsc;
+    private static double lat = 0.0;
+    private static double lon = 0.0;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Get the layout inflater
-        //LayoutInflater inflater = getActivity().getLayoutInflater();
-
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
         getActivity().setDefaultKeyMode(getActivity().DEFAULT_KEYS_SEARCH_LOCAL);
-        messageHandler = new MyMessageHandler(getActivity());
-        autoCompleteAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
-        autoCompleteAdapter.setNotifyOnChange(false);
+
         lsc = (LocationSelectionCallbacks)getActivity();
-        /*AutoCompleteTextView locationinput = (AutoCompleteTextView) getActivity().findViewById(R.id.locationInput);
-        locationinput.addTextChangedListener(this);
-        locationinput.setOnItemSelectedListener(this);
-        locationinput.setThreshold(THRESHOLD);
-        locationinput.setAdapter(autoCompleteAdapter);*/
     }
 
+    //Create the view and bind actions to the buttons
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.location_selection, container, false);
-        AutoCompleteTextView locationinput = (AutoCompleteTextView) v.findViewById(R.id.locationInput);
-        locationinput.addTextChangedListener(this);
-        locationinput.setOnItemSelectedListener(this);
-        locationinput.setThreshold(THRESHOLD);
-        locationinput.setAdapter(autoCompleteAdapter);
+
+        final AutoCompleteTextView locationinput = (AutoCompleteTextView) v.findViewById(R.id.location_autocomplete);
+        locationinput.setAdapter(new AutoCompleteAdapter(getActivity()));
+        locationinput.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Address selection = (Address)parent.getItemAtPosition(position);
+                lat = selection.getLatitude();
+                lon = selection.getLongitude();
+                //Log.v("LocationSelection", getFormattedAddress(selection));
+                locationinput.setText(getFormattedAddress(selection));
+                locationinput.dismissDropDown();
+                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(LocationSelection.this.getView().getWindowToken(), 0);
+
+            }
+        });
         Button button = (Button) v.findViewById(R.id.searchButton);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,77 +78,141 @@ public class LocationSelection extends Fragment implements TextWatcher, AdapterV
         return v;
     }
 
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        messageHandler.removeMessages(MESSAGE_TEXT_CHANGED);
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-        String value = s.toString();
-        if (!"".equals(value) && value.length() >= THRESHOLD) {
-            Message msg = Message.obtain(messageHandler, MESSAGE_TEXT_CHANGED, s.toString());
-            messageHandler.sendMessageDelayed(msg, AUTOCOMPLETE_DELAY);
-        } else {
-            autoCompleteAdapter.clear();
-        }
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        if (arg2 < autoCompleteSuggestionAddresses.size()) {
-            Address selected = autoCompleteSuggestionAddresses.get(arg2);
-            latitude = Double.toString(selected.getLatitude());
-            longitude = Double.toString(selected.getLongitude());
-        }
-    }
-
-    private void notifyResult(List<Address> suggestions) {
-        //latitude = longitude = null;
-        autoCompleteAdapter.clear();
-        for (Address a : autoCompleteSuggestionAddresses) {
-            autoCompleteAdapter.add(a.toString());//TODO: figure out a nice way to display this address in list
-        }
-        autoCompleteAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> arg0) {
-        latitude = longitude = null;
-    }
-
-    private class MyMessageHandler extends Handler {
-
-        private Context context;
-
-        public MyMessageHandler(Context context) {
-            this.context = context;
-
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == MESSAGE_TEXT_CHANGED) {
-                String enteredText = (String) msg.obj;
-
-                try {
-                    autoCompleteSuggestionAddresses = new Geocoder(context).getFromLocationName(enteredText, 10);
-                    notifyResult(autoCompleteSuggestionAddresses);
-                    //notifyResult(response);
-                } catch (IOException ex) {
-                    Log.e(LocationSelection.class.getName(), "Failed to get autocomplete suggestions", ex);
-                }
-            }
-        }
-    }
-
     public interface LocationSelectionCallbacks {
         public void searchButtonPressed();
     }
+
+    // And the corresponding Adapter
+    private class AutoCompleteAdapter extends ArrayAdapter<Address> implements Filterable {
+        private long max_meters = 10000;
+        private LayoutInflater mInflater;
+        private Geocoder mGeocoder;
+        private StringBuilder mSb = new StringBuilder();
+        private String locale;
+
+        public AutoCompleteAdapter(final Context context) {
+            super(context, -1);
+            mInflater = LayoutInflater.from(context);
+            mGeocoder = new Geocoder(context, Locale.US);
+            locale = getActivity().getResources().getConfiguration().locale.getCountry();
+        }
+
+        @Override
+        public View getView(final int position, final View convertView, final ViewGroup parent) {
+            final TextView tv;
+            if (convertView != null) {
+                tv = (TextView) convertView;
+            } else {
+                tv = (TextView) mInflater.inflate(android.R.layout.simple_dropdown_item_1line, parent, false);
+            }
+            String addy = createFormattedAddressFromAddress(getItem(position));
+            if (addy.trim().length() > 0) {
+                tv.setText(addy);
+            }
+            return tv;
+        }
+
+        private String createFormattedAddressFromAddress(final Address address) {
+            mSb.setLength(0);
+            final int addressLineSize = address.getMaxAddressLineIndex();
+            for (int i = 0; i < addressLineSize; i++) {
+                mSb.append(address.getAddressLine(i));
+                if (i != addressLineSize - 1) {
+                    mSb.append(", ");
+                }
+            }
+            return mSb.toString();
+        }
+
+        @Override
+        public Filter getFilter() {
+            Filter myFilter = new Filter() {
+                @Override
+                protected FilterResults performFiltering(final CharSequence constraint) {
+                    List<Address> addressList = null;
+                    if (constraint != null) {
+                        try {
+                            double lat = MyMap.lat;
+                            double lon = MyMap.lon;
+
+                            addressList = getListFromCoord(mGeocoder,(String) constraint, lat, lon, 500, 0);
+                            //
+                        } catch (IOException e) {
+                        }
+                    }
+                    if (addressList == null) {
+                        addressList = new ArrayList<Address>();
+                    }
+
+                    final FilterResults filterResults = new FilterResults();
+                    filterResults.values = addressList;
+                    filterResults.count = addressList.size();
+
+                    return filterResults;
+                }
+
+                @SuppressWarnings("unchecked")
+                @Override
+                protected void publishResults(final CharSequence contraint, final FilterResults results) {
+                    clear();
+                    for (Address address : (List<Address>) results.values) {
+                        String cc = address.getCountryCode();
+                        if (address != null && cc != null && address.getCountryCode().equals(locale)) {
+                            //Log.v("LocationSelection", getFormattedAddress(address));
+                            add(address);
+                        }
+                    }
+                    if (results.count > 0) {
+                        notifyDataSetChanged();
+                    } else {
+                        notifyDataSetInvalidated();
+                    }
+                }
+
+                @Override
+                public CharSequence convertResultToString(final Object resultValue) {
+                    return resultValue == null ? "" : ((Address) resultValue).getAddressLine(0);
+                }
+            };
+            return myFilter;
+        }
+    }
+
+    private final String getFormattedAddress(Address address) {
+        StringBuilder mSb = new StringBuilder();
+        mSb.setLength(0);
+        final int addressLineSize = address.getMaxAddressLineIndex();
+        for (int i = 0; i < addressLineSize; i++) {
+            mSb.append(address.getAddressLine(i));
+            if (i != addressLineSize - 1) {
+                mSb.append(", ");
+            }
+        }
+        return mSb.toString();
+    }
+    private List<Address> getListFromCoord (Geocoder gCoder, String name, double lat, double lon, int distance, int depth) throws IOException {
+            //Get two coordinates based on bearing and distance
+            LatLng norEast = getBearingCoord(lat, lon, 45, distance);
+            LatLng soWest = getBearingCoord(lat, lon, 225, distance);
+
+            double lowLefLat = soWest.latitude;
+            double lowLefLon = soWest.longitude;
+            double upRighLat = norEast.latitude;
+            double upRighLon = norEast.longitude;
+            List<Address> addresses = gCoder.getFromLocationName(name, 5, lowLefLat, lowLefLon, upRighLat, upRighLon);
+
+            if (addresses.size() == 0 && depth != 5) {
+                //Recurse because no results were returned
+                return getListFromCoord(gCoder, name, lat, lon, distance +500, depth + 1);
+            } else {
+                return addresses;
+            }
+
+    }
+
+    private LatLng getBearingCoord(double lat, double lon, int bearing, long distance) {
+        com.javadocmd.simplelatlng.LatLng newPoint =  LatLngTool.travel(new com.javadocmd.simplelatlng.LatLng(lat, lon), bearing, distance, LengthUnit.KILOMETER);
+        return new LatLng(newPoint.getLatitude(), newPoint.getLongitude());
+    }
+
 }
