@@ -6,5 +6,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="new_action_string">New Action</string>
     <string name="add_place_button_string">New Place</string>
+    <string name="searchBtnLabel">Ok</string>
+    <string name="searchMessage">Search For Location</string>
+    <string name="searchFreetextLabel"></string>
+    <string name="includeVincinityLabel">Search Vicinity</string>
+    <string name="locationInputHint" />
 
 </resources>

@@ -5,21 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <!-- The main content view -->
-    <!--<FrameLayout
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/container">
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/content_view"
+            class="com.charles.taskmantest.Fragments.MyMap"/>
+
+        <view
+            android:id="@+id/main_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="android.view.View"/>
+    </FrameLayout>
+    <!--<fragment
         android:id="@+id/content_view"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        />-->
-    <fragment
-        android:id="@+id/content_view"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        class="com.charles.taskmantest.Fragments.MyMap"/>
+        class="com.charles.taskmantest.Fragments.MyMap"/>-->
 
     <fragment
         android:id="@+id/drawer_view"
         android:name="com.charles.taskmantest.Fragments.DrawerListFragment"
-        android:layout_width="match_parent"
+        android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"/>
 

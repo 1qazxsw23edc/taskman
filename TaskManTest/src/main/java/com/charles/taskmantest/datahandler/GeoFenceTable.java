@@ -21,11 +21,11 @@ public class GeoFenceTable {
     private static final String DATABASE_CREATE = "create table "
             + TABLE_GEOFENCE
             +"("
-            + ID + " integer primary key not null, "
-            + NAME + " text, "
-            + LATITUDE + " real not null, "
-            + LONGITUDE + " real not null, "
-            + RADIUS + " real not null, "
+            + ID + " integer primary key autoincrement, "
+            + NAME + " text not null, "
+            + LATITUDE + " real not null default 0, "
+            + LONGITUDE + " real not null default 0, "
+            + RADIUS + " real not null default 100, "
             + EXPIRATION + " integer default null,"
             + TRANSITION + " integer default null"
             + ");";

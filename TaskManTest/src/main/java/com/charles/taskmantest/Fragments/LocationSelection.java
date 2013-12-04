@@ -53,6 +53,15 @@ public class LocationSelection extends Fragment {
         v = inflater.inflate(R.layout.location_selection, container, false);
 
         final AutoCompleteTextView locationinput = (AutoCompleteTextView) v.findViewById(R.id.location_autocomplete);
+        Geocoder gcoder = new Geocoder(getActivity());
+        try {
+            List<Address> currentAddress = gcoder.getFromLocation(MyMap.lat, MyMap.lon, 1);
+            //locationinput.setText(getFormattedAddress(currentAddress.get(0)));
+            locationinput.setHint(getFormattedAddress(currentAddress.get(0)));
+        } catch (IOException ioe) {
+
+        }
+
         locationinput.setAdapter(new AutoCompleteAdapter(getActivity()));
         locationinput.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
