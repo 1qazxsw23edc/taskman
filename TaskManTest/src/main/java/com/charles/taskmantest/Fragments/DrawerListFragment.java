@@ -13,7 +13,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,7 +64,6 @@ public class DrawerListFragment extends ListFragment implements
         header = inflater.inflate(R.layout.drawer_header, null);
         ((ListView)v).addHeaderView(header);
         mainView =v;
-
         initPlaces();
         return v;
     }
@@ -76,7 +74,7 @@ public class DrawerListFragment extends ListFragment implements
         super.onListItemClick(l, v, position, id);
         onItemSelected.onItemSelected(id);
         TextView tv = (TextView)v;
-        Log.v("ListItemClicked", Long.toString(id) + " " + tv.getText() );
+        //Log.v("ListItemClicked", Long.toString(id) + " " + tv.getText() );
     }
 
 
@@ -138,43 +136,11 @@ public class DrawerListFragment extends ListFragment implements
         Fragment frag = new LocationSelection();
         MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
         FragmentTransaction ft = fm.beginTransaction();
-        ft.hide(mMap);
+        ft.hide(mMap).addToBackStack("map");
         ft.add(R.id.container, frag, "location_select");
         ft.show(frag);
         ft.commit();
         onItemSelected.toggleDrawerClosed();
-        //ft.replace(R.id.content_frame, frag, "locSetter");
-        //ft.commit();
-        /*AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        alert.setTitle("New Place");
-        alert.setMessage("Add a New Place");
-        //Set an EditText view to get user input
-        final EditText input = new EditText(getActivity());
-        alert.setView(input);
-
-        alert.setPositiveButton("Add", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String value = input.getText().toString();
-                ContentValues values = new ContentValues();
-                //values.put(GeoFenceTable.ID, Integer.toString(random.nextInt()));
-                values.put(GeoFenceTable.LATITUDE, currentLatitude);
-                values.put(GeoFenceTable.LONGITUDE, currentLongitude);
-                values.put(GeoFenceTable.RADIUS, radius);
-                values.put(GeoFenceTable.EXPIRATION, 0);
-                values.put(GeoFenceTable.TRANSITION, 0);
-                values.put(GeoFenceTable.NAME, value);
-                Uri uri = getActivity().getContentResolver().insert(TaskManContentProvider.FENCE_URI, values);
-            }
-        });
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                return;
-            }
-        });
-        alert.show();*/
 
     }
 

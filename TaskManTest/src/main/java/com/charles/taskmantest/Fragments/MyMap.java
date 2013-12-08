@@ -46,7 +46,8 @@ public class MyMap extends MapFragment implements
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMarkerDragListener,
         LoaderManager.LoaderCallbacks<Cursor>,
-        DrawerListFragment.ItemSelectedListener{
+        DrawerListFragment.ItemSelectedListener,
+        LocationSelection.LocationSelectionCallbacks{
 
     private static GoogleMap gmap = null;
     final int RQS_GooglePlayServices = 1;
@@ -88,6 +89,14 @@ public class MyMap extends MapFragment implements
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         fillData();
+    }
+
+    @Override
+    public void placeCreated(String name, double lat, double lon) {
+        LatLng position = new LatLng(lat, lon);
+        CameraPosition camperPosition = new CameraPosition.Builder().target(position).zoom(16.0f).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(camperPosition);
+        gmap.animateCamera(cameraUpdate);
     }
 
     public interface MapIsLoaded {
@@ -350,6 +359,10 @@ public class MyMap extends MapFragment implements
         values.put(GeoFenceTable.LONGITUDE, lon);
         values.put(GeoFenceTable.RADIUS, radius);
         getActivity().getContentResolver().update(TaskManContentProvider.FENCE_URI, values,GeoFenceTable.ID + "=" + Integer.toString(id), null);
+    }
+
+    private void insertDB(double lat, double lon, double radius) {
+
     }
 
     private class Place {

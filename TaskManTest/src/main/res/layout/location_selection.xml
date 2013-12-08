@@ -5,22 +5,85 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="6dip"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.05" />
+
+    <EditText
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editPlaceName"
+        android:hint="Place Name"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.10" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/searchMessage"/>
-    <!--<EditText android:id="@+id/freetextInput"
-        android:hint="@string/searchFreetextLabel"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/editbox_background" />-->
+
     <AutoCompleteTextView android:id="@+id/location_autocomplete"
         android:hint="@string/locationInputHint"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.05" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="110dp">
+        <TextView android:id="@+id/radiusView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Radius (Meters)"
+            android:layout_gravity="center_horizontal"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar"
+            android:layout_centerVertical="true"
+            android:indeterminate="false"
+            android:layout_alignParentLeft="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="1m"
+            android:id="@+id/textView"
+            android:layout_alignParentLeft="true"
+            android:layout_above="@+id/seekBar" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="1km"
+            android:id="@+id/textView3"
+            android:layout_alignTop="@+id/textView"
+            android:layout_alignParentRight="true" />
+
+
+    </RelativeLayout>
+
+
+
     <Button android:id="@+id/searchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/searchBtnLabel"/>
+        android:text="@string/searchBtnLabel" />
+
 </LinearLayout>
