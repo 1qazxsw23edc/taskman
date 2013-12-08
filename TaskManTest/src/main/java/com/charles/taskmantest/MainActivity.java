@@ -162,7 +162,7 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void searchButtonPressed() {
+    public void placeCreated(String name, double lat, double lon) {
         FragmentManager fm = getFragmentManager();
         MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
         Fragment lSelction = (Fragment)fm.findFragmentByTag("location_select");
@@ -170,5 +170,6 @@ public class MainActivity extends Activity implements
         ft.remove(lSelction);
         ft.show(mMap);
         ft.commit();
+        ((MyMap)mMap).placeCreated(name, lat, lon);
     }
 }
