@@ -13,6 +13,10 @@ import com.charles.taskmantest.R;
  */
 public class Selectors extends Fragment {
 
+    public Selectors(Long id) {
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.action_layout, container, false);

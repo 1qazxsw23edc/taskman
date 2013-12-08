@@ -1,6 +1,9 @@
 package com.charles.taskmantest.Fragments;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
@@ -87,7 +91,7 @@ public class MyMap extends MapFragment implements
         distance = 100;
         myLocationListener = new MyLocationListener();
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-
+        gmap.setOnMarkerClickListener(this);
         fillData();
     }
 
@@ -226,6 +230,23 @@ public class MyMap extends MapFragment implements
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        Log.v("Marker Clicked" , "Clicked");
+        Iterator it = fencesMap.keySet().iterator();
+        while (it.hasNext()) {
+            Long id = (Long)it.next();
+            Place p = fencesMap.get(id);
+            if (p.getMarker().equals(marker)) {
+                Fragment frag = new Selectors(id);
+                FragmentManager fm = getFragmentManager();
+                //MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.hide(this).addToBackStack("map");
+                ft.add(R.id.container, frag, "set_options");
+                ft.show(frag);
+                ft.commit();
+
+            }
+        }
         return false;
     }
 
@@ -268,7 +289,7 @@ public class MyMap extends MapFragment implements
         @Override
         public boolean onMarkerClick(Marker marker) {
             String title = marker.getTitle();
-            //Place place = upc.getPlaceById(marker.getId());
+
             return false;
         }
     }
