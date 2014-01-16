@@ -13,7 +13,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/content_view"
-            class="com.charles.taskmantest.Fragments.MyMap"/>
+            class="com.charles.taskmantest.fragments.MyMap"/>
 
         <view
             android:id="@+id/main_view"
@@ -29,7 +29,7 @@
 
     <fragment
         android:id="@+id/drawer_view"
-        android:name="com.charles.taskmantest.Fragments.DrawerListFragment"
+        android:name="com.charles.taskmantest.fragments.DrawerListFragment"
         android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"/>

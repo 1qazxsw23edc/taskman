@@ -1,4 +1,4 @@
-package com.charles.taskmantest.Fragments;
+package com.charles.taskmantest.fragments;
 
 import android.app.Fragment;
 import android.content.ContentValues;
@@ -20,6 +20,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
@@ -77,6 +78,10 @@ public class LocationSelection extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (editPlaceName.getText().toString().trim().length() == 0) {
+                    Toast.makeText(getActivity(), "Must set a Name", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 ContentValues values = new ContentValues();
                 values.put(GeoFenceTable.NAME, editPlaceName.getText().toString());
                 values.put(GeoFenceTable.RADIUS, radius);
@@ -91,6 +96,7 @@ public class LocationSelection extends Fragment {
         return v;
     }
 
+    //Setup the autocomplete
     private final void setupAutoCompleteAddress(final AutoCompleteTextView locationinput) {
         Geocoder gcoder = new Geocoder(getActivity());
         try {
@@ -118,6 +124,7 @@ public class LocationSelection extends Fragment {
         });
     }
 
+    //Add an action to the SeekBar to update a textview with the size of the radius in meters
     private final void setupRadiusSeekBar(final SeekBar radBar) {
         radBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -146,6 +153,7 @@ public class LocationSelection extends Fragment {
     }
 
 
+    //Convert and Address object into something readable
     private final String getFormattedAddress(Address address) {
         StringBuilder mSb = new StringBuilder();
         mSb.setLength(0);
@@ -160,6 +168,8 @@ public class LocationSelection extends Fragment {
         }
         return mSb.toString();
     }
+
+    //The method to get the current address based on your current lat/long
     private List<Address> getListFromCoord (Geocoder gCoder, String name, double lat, double lon, int distance, int depth) throws IOException {
         //Get two coordinates based on bearing and distance
         LatLng norEast = getBearingCoord(lat, lon, 45, distance);
@@ -180,18 +190,22 @@ public class LocationSelection extends Fragment {
 
     }
 
+    /*
+    Compute a LatLng that is based on your current location, distance, and a bearing.
+     */
     private LatLng getBearingCoord(double lat, double lon, int bearing, long distance) {
         com.javadocmd.simplelatlng.LatLng newPoint =  LatLngTool.travel(new com.javadocmd.simplelatlng.LatLng(lat, lon), bearing, distance, LengthUnit.KILOMETER);
         return new LatLng(newPoint.getLatitude(), newPoint.getLongitude());
     }
 
+    //Interface for callbacks
     public interface LocationSelectionCallbacks {
         public void placeCreated(String name, double lat, double lon);
     }
 
-    // And the corresponding Adapter
+    // An adapter that automatically takes what you're typing into the text field and tries to find addresses based on that
     private class AutoCompleteAdapter extends ArrayAdapter<Address> implements Filterable {
-        private long max_meters = 10000;
+        //private long max_meters = 10000;
         private LayoutInflater mInflater;
         private Geocoder mGeocoder;
         private StringBuilder mSb = new StringBuilder();
@@ -213,7 +227,7 @@ public class LocationSelection extends Fragment {
                 tv = (TextView) mInflater.inflate(android.R.layout.simple_dropdown_item_1line, parent, false);
             }
             String addy = createFormattedAddressFromAddress(getItem(position));
-            if (addy.trim().length() > 0) {
+            if (addy.trim().length() > 0) { //Ignore 0 length addresses
                 tv.setText(addy);
             }
             return tv;

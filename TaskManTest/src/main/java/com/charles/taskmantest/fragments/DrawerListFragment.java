@@ -1,4 +1,4 @@
-package com.charles.taskmantest.Fragments;
+package com.charles.taskmantest.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -190,7 +190,7 @@ public class DrawerListFragment extends ListFragment implements
         mAdapter.swapCursor(null);
     }
 
-    //Method to assigne the cursoradapter and fill the listview with the already assigned values
+    //Method to assign the cursoradapter and fill the listview with the already assigned values
     private void fillData() {
         String[] from = new String[] {GeoFenceTable.NAME};
 

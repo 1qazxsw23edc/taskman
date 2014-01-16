@@ -16,9 +16,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-import com.charles.taskmantest.Fragments.DrawerListFragment;
-import com.charles.taskmantest.Fragments.LocationSelection;
-import com.charles.taskmantest.Fragments.MyMap;
+import com.charles.taskmantest.fragments.DrawerListFragment;
+import com.charles.taskmantest.fragments.LocationSelection;
+import com.charles.taskmantest.fragments.MyMap;
 import com.charles.taskmantest.geofence.CheckServices;
 import com.google.android.gms.maps.MapFragment;
 
@@ -49,6 +49,40 @@ public class MainActivity extends Activity implements
         ActionBar ab = getActionBar();
         ab.setHomeButtonEnabled(true);
         ab.setDisplayHomeAsUpEnabled(true);
+        ab.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        ab.addTab(ab.newTab().setText("Enter").setTabListener(new ActionBar.TabListener() {
+            @Override
+            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+
+            @Override
+            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+
+            @Override
+            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+        }));
+        ab.addTab(ab.newTab().setText("Leave").setTabListener(new ActionBar.TabListener() {
+            @Override
+            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+
+            @Override
+            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+
+            @Override
+            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+            }
+        }));
+
 
 
         //Construct the slide out drawer

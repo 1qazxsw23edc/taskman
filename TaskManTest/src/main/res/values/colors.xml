@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="bluish">#336699</color>
+    <color name="invisible">#A0FFFFFF</color>
 </resources>

@@ -1,5 +1,6 @@
-package com.charles.taskmantest.Fragments;
+package com.charles.taskmantest.fragments;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -236,19 +237,28 @@ public class MyMap extends MapFragment implements
             Long id = (Long)it.next();
             Place p = fencesMap.get(id);
             if (p.getMarker().equals(marker)) {
-                Fragment frag = new Selectors(id);
+                Fragment frag = new Selector(p.getName(), id, p.getLatitude(), p.getLongitude(), p.getRadius());
                 FragmentManager fm = getFragmentManager();
-                //MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
                 FragmentTransaction ft = fm.beginTransaction();
                 ft.hide(this).addToBackStack("map");
-                ft.add(R.id.container, frag, "set_options");
+                ft.add(R.id.container, frag, "enter_options");
                 ft.show(frag);
                 ft.commit();
-
+                getActivity().getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
             }
         }
         return false;
     }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if (!hidden) {
+            ActionBar ab = getActivity().getActionBar();
+            ab.setTitle("TaskMan");
+            ab.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        }
+    }
+
 
     //Listen for location changes and update the map with that information
     private class MyLocationListener implements LocationListener {
@@ -281,16 +291,6 @@ public class MyMap extends MapFragment implements
         @Override
         public void onProviderDisabled(String provider) {
 
-        }
-    }
-
-    private class MarkerClickedListener implements GoogleMap.OnMarkerClickListener {
-
-        @Override
-        public boolean onMarkerClick(Marker marker) {
-            String title = marker.getTitle();
-
-            return false;
         }
     }
 
@@ -366,6 +366,7 @@ public class MyMap extends MapFragment implements
 
             for (int i = 0; i < result.length; i++) {
                 Place p = result[i];
+                //Don't re-create places
                 if (fencesMap.containsKey(p.getId())) continue;
                 createGeoFence(p);
             }

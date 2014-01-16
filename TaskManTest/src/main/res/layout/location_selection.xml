@@ -71,7 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="1km"
+            android:text="500m"
             android:id="@+id/textView3"
             android:layout_alignTop="@+id/textView"
             android:layout_alignParentRight="true" />
