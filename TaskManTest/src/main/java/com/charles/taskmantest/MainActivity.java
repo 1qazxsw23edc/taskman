@@ -11,15 +11,18 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.charles.taskmantest.fragments.DrawerListFragment;
 import com.charles.taskmantest.fragments.LocationSelection;
 import com.charles.taskmantest.fragments.MyMap;
-import com.charles.taskmantest.geofence.CheckServices;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.MapFragment;
 
 
@@ -33,7 +36,7 @@ public class MainActivity extends Activity implements
     private static MyMap mapFragment = null;
     private static ListView mDrawerList;
     private static final int LOADER_ID = 0;
-
+    static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 1001;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +126,9 @@ public class MainActivity extends Activity implements
     @Override
     public void onResume() {
         super.onResume();
+        if (checkPlayServices()) {
+            Log.v("Play Services Check", "Play Services Found");
+        }
         //fm = getFragmentManager();
         if (mPreferences.getBoolean("firstrun", true)) {
             //FIX THIS - needs to run to check for play services
@@ -130,11 +136,9 @@ public class MainActivity extends Activity implements
             showWait.setTitle("Initializing");
             showWait.setMessage("Please wait, checking for Google Play Services");
             showWait.show();
-            startActivity(new Intent(this, CheckServices.class));
             showWait.dismiss();
             firstRun();
         }
-
     }
 
     /*
@@ -205,5 +209,39 @@ public class MainActivity extends Activity implements
         ft.show(mMap);
         ft.commit();
         ((MyMap)mMap).placeCreated(name, lat, lon);
+    }
+
+    //Run a check for Google Play Services, prompt to install it if you don't have it
+
+    private boolean checkPlayServices() {
+        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (status != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(status)) {
+                showErrorDialog(status);
+            } else {
+                Toast.makeText(this, "This device is not supported.",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public void showErrorDialog(int code) {
+        GooglePlayServicesUtil.getErrorDialog(code, this, REQUEST_CODE_RECOVER_PLAY_SERVICES).show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case REQUEST_CODE_RECOVER_PLAY_SERVICES:
+                if (resultCode == RESULT_CANCELED) {
+                    Toast.makeText(this, "Google Play Services muse be installed.", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                return;
+        }
+        super.onActivityResult(requestCode,resultCode,data);
     }
 }
