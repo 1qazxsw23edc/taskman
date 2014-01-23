@@ -24,8 +24,6 @@ import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -72,22 +70,17 @@ public class MyMap extends MapFragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this.getActivity().getApplicationContext());
-        if (resultCode == ConnectionResult.SUCCESS){
 
-            if(gmap == null){
-                gmap = this.getMap();
-                if(gmap != null){
-                    gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                    gmap.setOnMarkerDragListener(this);
-                    gmap.setMyLocationEnabled(true);
-                    //gmap.setOnMapLongClickListener(this);
-                }else{
-                    return;
-                }
+        if(gmap == null){
+            gmap = this.getMap();
+            if(gmap != null){
+                gmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                gmap.setOnMarkerDragListener(this);
+                gmap.setMyLocationEnabled(true);
+                //gmap.setOnMapLongClickListener(this);
+            }else{
+                return;
             }
-        }else{
-            GooglePlayServicesUtil.getErrorDialog(resultCode, this.getActivity(), RQS_GooglePlayServices);
         }
         distance = 100;
         myLocationListener = new MyLocationListener();
