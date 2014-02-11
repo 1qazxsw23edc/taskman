@@ -2,13 +2,11 @@ package com.charles.taskmantest.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -24,12 +22,13 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import com.charles.taskmantest.MainActivity;
 import com.charles.taskmantest.R;
+import com.charles.taskmantest.activities.AddLocationActivity;
 import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
-import com.google.android.gms.maps.MapFragment;
 
 /**
  * Created by charles on 11/23/13.
@@ -131,15 +130,12 @@ public class DrawerListFragment extends ListFragment implements
    Show an alert to ask for the name of the new place they want to add
     */
     private void addPlacesPressed() {
-        FragmentManager fm = getActivity().getFragmentManager();
-
-        Fragment frag = new LocationSelection();
-        MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.hide(mMap).addToBackStack("map");
-        ft.add(R.id.container, frag, "location_select");
-        ft.show(frag);
-        ft.commit();
+        Intent addy = new Intent(getActivity(), AddLocationActivity.class);
+        addy.putExtra("latitude", MyMap.lat);
+        addy.putExtra("longitude", MyMap.lon);
+        if (addy.resolveActivity(getActivity().getPackageManager()) != null) {
+            getActivity().startActivityForResult(addy, MainActivity.LOCATION_REQUEST_CODE);
+        }
         onItemSelected.toggleDrawerClosed();
 
     }

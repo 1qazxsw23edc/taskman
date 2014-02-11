@@ -1,8 +1,9 @@
-package com.charles.taskmantest.fragments;
+package com.charles.taskmantest.activities;
 
-import android.app.Fragment;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -35,15 +36,16 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by charles on 11/29/13.
+ * Created by charles on 2/7/14.
  */
-public class LocationSelection extends Fragment {
+public class AddLocationActivity extends Activity {
 
     private static ArrayAdapter<String> autoCompleteAdapter;
     private View v;
-    private LocationSelectionCallbacks lsc;
     private static double lat = 0.0;
     private static double lon = 0.0;
+    private static double clat = 0.0;
+    private static double clon = 0.0;
     private final int radMin = 1;
     private final int radMax = 500;
     private static double radius;
@@ -55,15 +57,13 @@ public class LocationSelection extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setDefaultKeyMode(getActivity().DEFAULT_KEYS_SEARCH_LOCAL);
-
-        lsc = (LocationSelectionCallbacks)getActivity();
-    }
-
-    //Create the view and bind actions to the buttons
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        v = inflater.inflate(R.layout.location_selection, container, false);
+        setDefaultKeyMode(this.DEFAULT_KEYS_SEARCH_LOCAL);
+        setContentView(R.layout.location_selection);
+        Intent intent = getIntent();
+        clat = intent.getDoubleExtra("latitude", 0);
+        clon = intent.getDoubleExtra("longitude", 0);
+        v = this.getWindow().getDecorView().getRootView();
+        //v = inflater.inflate(R.layout.location_selection, container, false);
 
         final AutoCompleteTextView locationinput = (AutoCompleteTextView) v.findViewById(R.id.location_autocomplete);
         setupAutoCompleteAddress(locationinput);
@@ -79,7 +79,7 @@ public class LocationSelection extends Fragment {
             @Override
             public void onClick(View v) {
                 if (editPlaceName.getText().toString().trim().length() == 0) {
-                    Toast.makeText(getActivity(), "Must set a Name", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AddLocationActivity.this, "Must set a Name", Toast.LENGTH_LONG).show();
                     return;
                 }
                 ContentValues values = new ContentValues();
@@ -87,38 +87,39 @@ public class LocationSelection extends Fragment {
                 values.put(GeoFenceTable.RADIUS, radius);
                 values.put(GeoFenceTable.LATITUDE, lat);
                 values.put(GeoFenceTable.LONGITUDE, lon);
-                Uri ins = getActivity().getContentResolver().insert(TaskManContentProvider.FENCE_URI, values);
-                lsc.placeCreated(editPlaceName.getText().toString(), lat, lon);
-                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                in.hideSoftInputFromWindow(LocationSelection.this.getView().getWindowToken(), 0);
+                Uri ins = AddLocationActivity.this.getContentResolver().insert(TaskManContentProvider.FENCE_URI, values);
+                //lsc.placeCreated(editPlaceName.getText().toString(), lat, lon);
+                InputMethodManager in = (InputMethodManager) AddLocationActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(AddLocationActivity.this.getWindow().getDecorView().getRootView().getWindowToken(), 0);
+                AddLocationActivity.this.finish();
             }
         });
-        return v;
+
+
     }
 
     //Setup the autocomplete
     private final void setupAutoCompleteAddress(final AutoCompleteTextView locationinput) {
-        Geocoder gcoder = new Geocoder(getActivity());
+        Geocoder gcoder = new Geocoder(this);
         try {
-            List<Address> currentAddress = gcoder.getFromLocation(MyMap.lat, MyMap.lon, 1);
+            List<Address> currentAddress = gcoder.getFromLocation(clat, clon, 1);
             //locationinput.setText(getFormattedAddress(currentAddress.get(0)));
             locationinput.setHint(getFormattedAddress(currentAddress.get(0)));
         } catch (IOException ioe) {
 
         }
 
-        locationinput.setAdapter(new AutoCompleteAdapter(getActivity()));
+        locationinput.setAdapter(new AutoCompleteAdapter(this));
         locationinput.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Address selection = (Address)parent.getItemAtPosition(position);
                 lat = selection.getLatitude();
                 lon = selection.getLongitude();
-                //Log.v("LocationSelection", getFormattedAddress(selection));
                 locationinput.setText(getFormattedAddress(selection));
                 locationinput.dismissDropDown();
-                InputMethodManager in = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                in.hideSoftInputFromWindow(LocationSelection.this.getView().getWindowToken(), 0);
+                InputMethodManager in = (InputMethodManager) AddLocationActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                in.hideSoftInputFromWindow(AddLocationActivity.this.getWindow().getDecorView().getRootView().getWindowToken(), 0);
 
             }
         });
@@ -191,16 +192,11 @@ public class LocationSelection extends Fragment {
     }
 
     /*
-    Compute a LatLng that is based on your current location, distance, and a bearing.
+    Compute a LatLng that is based on your current location, distance, and a bearing using the Haversine forumula
      */
     private LatLng getBearingCoord(double lat, double lon, int bearing, long distance) {
         com.javadocmd.simplelatlng.LatLng newPoint =  LatLngTool.travel(new com.javadocmd.simplelatlng.LatLng(lat, lon), bearing, distance, LengthUnit.KILOMETER);
         return new LatLng(newPoint.getLatitude(), newPoint.getLongitude());
-    }
-
-    //Interface for callbacks
-    public interface LocationSelectionCallbacks {
-        public void placeCreated(String name, double lat, double lon);
     }
 
     // An adapter that automatically takes what you're typing into the text field and tries to find addresses based on that
@@ -215,7 +211,7 @@ public class LocationSelection extends Fragment {
             super(context, -1);
             mInflater = LayoutInflater.from(context);
             mGeocoder = new Geocoder(context, Locale.US);
-            locale = getActivity().getResources().getConfiguration().locale.getCountry();
+            locale = AddLocationActivity.this.getResources().getConfiguration().locale.getCountry();
         }
 
         @Override
@@ -245,6 +241,7 @@ public class LocationSelection extends Fragment {
             return mSb.toString();
         }
 
+        //This creates a filter that returns results based on a square drawn around you with the Haversine Formula
         @Override
         public Filter getFilter() {
             Filter myFilter = new Filter() {
@@ -253,8 +250,8 @@ public class LocationSelection extends Fragment {
                     List<Address> addressList = null;
                     if (constraint != null) {
                         try {
-                            double lat = MyMap.lat;
-                            double lon = MyMap.lon;
+                            double lat = clat;
+                            double lon = clon;
 
                             addressList = getListFromCoord(mGeocoder,(String) constraint, lat, lon, 500, 0);
                             //
@@ -299,4 +296,19 @@ public class LocationSelection extends Fragment {
         }
     }
 
+    @Override
+    public void finish() {
+        Intent intent = new Intent();
+        String name = editPlaceName.getText().toString();
+        if (name != null && name.length() > 0 && lat != 0 && lon != 0) {
+            intent.putExtra("name", name);
+            intent.putExtra("lat", lat);
+            intent.putExtra("lon", lon);
+            setResult(RESULT_OK, intent);
+        } else {
+            setResult(this.RESULT_CANCELED);
+        }
+
+        super.finish();
+    }
 }

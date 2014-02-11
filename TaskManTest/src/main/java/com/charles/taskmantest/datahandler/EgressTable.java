@@ -18,7 +18,7 @@ public class EgressTable {
     private static final String DATABASE_CREATE = "create table "
             + EGRESS_TABLE
             +"("
-            + ID + " integer primary key not null, "
+            + ID + " integer not null, "
             + AIRPLANE + " integer, "
             + WIFI + " text, "
             + SMS + " text, "

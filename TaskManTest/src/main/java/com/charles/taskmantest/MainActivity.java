@@ -2,9 +2,7 @@ package com.charles.taskmantest;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,7 +17,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.charles.taskmantest.fragments.DrawerListFragment;
-import com.charles.taskmantest.fragments.LocationSelection;
 import com.charles.taskmantest.fragments.MyMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -28,65 +25,30 @@ import com.google.android.gms.maps.MapFragment;
 
 public class MainActivity extends Activity implements
         DrawerListFragment.ItemSelectedListener,
-        MyMap.MapIsLoaded,
-        LocationSelection.LocationSelectionCallbacks{
+        MyMap.MapIsLoaded {
 
     private static DrawerLayout mDrawerLayout;
     private SharedPreferences mPreferences;
     private static MyMap mapFragment = null;
     private static ListView mDrawerList;
-    private static final int LOADER_ID = 0;
+    //private static final int LOADER_ID = 0;
     static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 1001;
+    public final static int LOCATION_REQUEST_CODE = 1002;
+    public final static int SELECTOR_REQUEST_CODE = 1003;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("TaskMan");
+        ActionBar ab = getActionBar();
+        ab.setHomeButtonEnabled(true);
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 
 
 
         //Detect whether or not it's first run
         mPreferences = getSharedPreferences("com.charles.TaskManTest", MODE_PRIVATE);
-
-        //Construct the action bar
-        ActionBar ab = getActionBar();
-        ab.setHomeButtonEnabled(true);
-        ab.setDisplayHomeAsUpEnabled(true);
-        ab.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        ab.addTab(ab.newTab().setText("Enter").setTabListener(new ActionBar.TabListener() {
-            @Override
-            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-
-            @Override
-            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-
-            @Override
-            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-        }));
-        ab.addTab(ab.newTab().setText("Leave").setTabListener(new ActionBar.TabListener() {
-            @Override
-            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-
-            @Override
-            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-
-            @Override
-            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-            }
-        }));
-
-
 
         //Construct the slide out drawer
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -94,8 +56,6 @@ public class MainActivity extends Activity implements
 
         //Construct a new MapFragment, this will start the initialization process to create a viewable map
         mapFragment = new MyMap();
-
-
     }
 
 
@@ -159,7 +119,6 @@ public class MainActivity extends Activity implements
     Custom methods that don't override built in methods
      */
     private void firstRun() {
-        //mDrawerLayout.openDrawer(mDrawerList);
         mPreferences.edit().putBoolean("firstrun", false).commit();
     }
 
@@ -199,18 +158,6 @@ public class MainActivity extends Activity implements
 
     }
 
-    @Override
-    public void placeCreated(String name, double lat, double lon) {
-        FragmentManager fm = getFragmentManager();
-        MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
-        Fragment lSelction = (Fragment)fm.findFragmentByTag("location_select");
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.remove(lSelction);
-        ft.show(mMap);
-        ft.commit();
-        ((MyMap)mMap).placeCreated(name, lat, lon);
-    }
-
     //Run a check for Google Play Services, prompt to install it if you don't have it
 
     private boolean checkPlayServices() {
@@ -232,15 +179,31 @@ public class MainActivity extends Activity implements
         GooglePlayServicesUtil.getErrorDialog(code, this, REQUEST_CODE_RECOVER_PLAY_SERVICES).show();
     }
 
+    //Take the results of the internal intents and parse them
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
         switch(requestCode) {
             case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                 if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(this, "Google Play Services muse be installed.", Toast.LENGTH_LONG).show();
                     finish();
                 }
-                return;
+                break;
+            case LOCATION_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    if (data.hasExtra("name") && data.hasExtra("lat") && data.hasExtra("lon")) {
+                        String name = data.getExtras().getString("name");
+                        double lat = data.getExtras().getDouble("lat");
+                        double lon = data.getExtras().getDouble("lon");
+                        if (name != null && lat != 0 && lon != 0) {
+                            FragmentManager fm = getFragmentManager();
+                            MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
+                            ((MyMap)mMap).placeCreated(name, lat, lon);
+                        }
+                    }
+                }
         }
         super.onActivityResult(requestCode,resultCode,data);
     }

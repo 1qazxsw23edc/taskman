@@ -2,13 +2,11 @@ package com.charles.taskmantest.fragments;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -20,7 +18,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.charles.taskmantest.R;
+import com.charles.taskmantest.MainActivity;
+import com.charles.taskmantest.activities.AddLocationActivity;
+import com.charles.taskmantest.activities.SelectorActivity;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,8 +50,8 @@ public class MyMap extends MapFragment implements
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMarkerDragListener,
         LoaderManager.LoaderCallbacks<Cursor>,
-        DrawerListFragment.ItemSelectedListener,
-        LocationSelection.LocationSelectionCallbacks{
+        GoogleMap.OnMapLongClickListener,
+        DrawerListFragment.ItemSelectedListener {
 
     private static GoogleMap gmap = null;
     final int RQS_GooglePlayServices = 1;
@@ -70,7 +71,9 @@ public class MyMap extends MapFragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        if (savedInstanceState != null ) {
+            Log.v("Found Saved Instance State", "FOUND MUTHEREFFER");
+        }
         if(gmap == null){
             gmap = this.getMap();
             if(gmap != null){
@@ -86,10 +89,11 @@ public class MyMap extends MapFragment implements
         myLocationListener = new MyLocationListener();
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
         gmap.setOnMarkerClickListener(this);
+        gmap.setOnMapLongClickListener(this);
         fillData();
+        this.setRetainInstance(true);
     }
 
-    @Override
     public void placeCreated(String name, double lat, double lon) {
         LatLng position = new LatLng(lat, lon);
         CameraPosition camperPosition = new CameraPosition.Builder().target(position).zoom(16.0f).build();
@@ -124,6 +128,11 @@ public class MyMap extends MapFragment implements
         mLocManager.getLastKnownLocation(Context.LOCATION_SERVICE);
 
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -165,11 +174,18 @@ public class MyMap extends MapFragment implements
         }
     }
 
-    /*@Override
+    //Long click on the map to add a new place
+    @Override
     public void onMapLongClick(LatLng latLng) {
-        createGeoFence(latLng.latitude, latLng.longitude, distance, "CIRCLE", "A clever title");
-    }*/
+        Intent addy = new Intent(getActivity(), AddLocationActivity.class);
+        addy.putExtra("latitude", latLng.latitude);
+        addy.putExtra("longitude", latLng.longitude);
+        if (addy.resolveActivity(getActivity().getPackageManager()) != null) {
+            getActivity().startActivityForResult(addy, MainActivity.LOCATION_REQUEST_CODE);
+        }
+    }
 
+    //Pretty self-explanatory.  Creates a place and stores that in our HashMap tracker
     private void createGeoFence(Place p) {
         Marker marker = gmap.addMarker(new MarkerOptions()
                 .draggable(true)
@@ -189,6 +205,7 @@ public class MyMap extends MapFragment implements
         fencesMap.put(p.getId(), p);
     }
 
+    //Listeners that handle places based on the id they're assigned in the database.
     @Override
     public void onItemSelected(long id) {
         Place p = fencesMap.get(id);
@@ -230,14 +247,10 @@ public class MyMap extends MapFragment implements
             Long id = (Long)it.next();
             Place p = fencesMap.get(id);
             if (p.getMarker().equals(marker)) {
-                Fragment frag = new Selector(p.getName(), id, p.getLatitude(), p.getLongitude(), p.getRadius());
-                FragmentManager fm = getFragmentManager();
-                FragmentTransaction ft = fm.beginTransaction();
-                ft.hide(this).addToBackStack("map");
-                ft.add(R.id.container, frag, "enter_options");
-                ft.show(frag);
-                ft.commit();
-                getActivity().getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+                Intent place = new Intent(getActivity(), SelectorActivity.class);
+                if (place.resolveActivity(getActivity().getPackageManager()) != null) {
+                    getActivity().startActivityForResult(place, MainActivity.SELECTOR_REQUEST_CODE);
+                }
             }
         }
         return false;
@@ -366,10 +379,9 @@ public class MyMap extends MapFragment implements
         }
     }
 
+    //Update the database with new values
     private void updateDB(double lat, double lon, double radius, int id) {
         ContentValues values = new ContentValues();
-        //values.put(GeoFenceTable.ID, Integer.toString(random.nextInt()));
-        //values.put(GeoFenceTable.ID, id);
         values.put(GeoFenceTable.LATITUDE, lat);
         values.put(GeoFenceTable.LONGITUDE, lon);
         values.put(GeoFenceTable.RADIUS, radius);
@@ -380,7 +392,10 @@ public class MyMap extends MapFragment implements
 
     }
 
-    private class Place {
+    /*
+    An ugly kludge that makes a convenient way for me to store the values of places.  Makes it easier to manage the database as well as state of places
+     */
+    private class Place implements Serializable {
         private String name = null;
         private double latitude = 0.0f;
         private double longitude = 0.0f;
@@ -430,9 +445,7 @@ public class MyMap extends MapFragment implements
             this.radius = radius;
         }
 
-        public Marker getMarker() {
-            return marker;
-        }
+        public Marker getMarker() { return marker;}
 
         public void setMarker(Marker marker) {
             this.marker = marker;

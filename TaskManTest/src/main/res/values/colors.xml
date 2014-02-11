@@ -2,4 +2,6 @@
 <resources>
     <color name="bluish">#336699</color>
     <color name="invisible">#A0FFFFFF</color>
+    <color name="semigrey">#989191</color>
+    <color name="semigreen">#828AE72D</color>
 </resources>
