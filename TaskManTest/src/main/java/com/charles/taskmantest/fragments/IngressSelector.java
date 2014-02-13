@@ -31,8 +31,8 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
-
         v = inflater.inflate(R.layout.ingress_layout, view, false);
+        idCode = getActivity().getIntent().getLongExtra("id", -1);
         setupButtons(inflater);
         return v;
     }
@@ -48,7 +48,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v("Loader Finished loading", "From MyMap");
+        Log.v("Ingress Loader Finished loading", "From MyMap");
         switch (loader.getId()) {
             case LOADER_ID:
                 Log.v("Found my Loader", "Found My  LOADER");
@@ -125,9 +125,9 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
             Cursor c = params[0];
             for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
-                /*if (id == idCode) {
+                if (id == idCode) {
                     Log.v("Found my match", "found my match");
-                }*/
+                }
             }
             return null;
         }
@@ -158,6 +158,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
             return null;
         }
     }
+
 
 
 }

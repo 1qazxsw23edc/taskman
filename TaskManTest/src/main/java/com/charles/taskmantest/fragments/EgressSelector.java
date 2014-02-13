@@ -17,6 +17,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 
 import com.charles.taskmantest.R;
+import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 
@@ -31,8 +32,8 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
-
         v = inflater.inflate(R.layout.egress_layout, view, false);
+        idCode = getActivity().getIntent().getLongExtra("id", -1);
         setupButtons(inflater);
         return v;
     }
@@ -40,15 +41,15 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.v("Loader", "Starting Loader");
-        String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/ingress_table";
+        String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/egress_table";
         Uri places = Uri.parse(URL);
-        String[] projection = new String[] {IngressTable.ID, IngressTable.WIFI, IngressTable.SOUND, IngressTable.SMS,IngressTable.AIRPLANE};
+        String[] projection = new String[] {EgressTable.ID, EgressTable.WIFI, EgressTable.SOUND, EgressTable.SMS,EgressTable.AIRPLANE};
         return new CursorLoader(getActivity(), places, projection, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v("Loader Finished loading", "From MyMap");
+        Log.v("Egress Loader Finished loading", "From MyMap");
         switch (loader.getId()) {
             case LOADER_ID:
                 Log.v("Found my Loader", "Found My  LOADER");
@@ -125,9 +126,9 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
             Cursor c = params[0];
             for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
-                /*if (id == idCode) {
+                if (id == idCode) {
                     Log.v("Found my match", "found my match");
-                }*/
+                }
             }
             return null;
         }

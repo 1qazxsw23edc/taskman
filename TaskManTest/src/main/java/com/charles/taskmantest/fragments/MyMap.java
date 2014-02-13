@@ -249,6 +249,7 @@ public class MyMap extends MapFragment implements
             if (p.getMarker().equals(marker)) {
                 Intent place = new Intent(getActivity(), SelectorActivity.class);
                 if (place.resolveActivity(getActivity().getPackageManager()) != null) {
+                    place.putExtra("id", id);
                     getActivity().startActivityForResult(place, MainActivity.SELECTOR_REQUEST_CODE);
                 }
             }

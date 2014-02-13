@@ -18,7 +18,7 @@ public class IngressTable {
     private static final String DATABASE_CREATE = "create table "
             + INGRESS_TABLE
             +"("
-            + ID + " integer not null, "
+            + ID + " integer primary key not null, "
             + AIRPLANE + " integer, "
             + WIFI + " text, "
             + SMS + " text, "
