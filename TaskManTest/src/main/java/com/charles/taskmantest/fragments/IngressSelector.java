@@ -16,6 +16,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 
 import com.charles.taskmantest.R;
+import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.google.gson.Gson;
 
@@ -118,13 +119,16 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         @Override
         protected String doInBackground(Cursor... params) {
             Cursor c = params[0];
-            Log.v("Number of Rows: ", Integer.toString(c.getCount()));
             for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
-                Log.v("Id From DB: " , Integer.toString(id));
                 if (id == idCode) {
-                    Log.v("Found my match", "found my match");
+                    String gson = c.getString(c.getColumnIndexOrThrow(EgressTable.CONSTRUCT));
+                    if (gson.length() == 0) {
+                        Log.v("Empty GSON", "Empty GSON");
+                    } else {
+
+                    }
                 }
             }
             return null;
