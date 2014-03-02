@@ -25,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.charles.taskmantest.R;
+import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
+import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.google.android.gms.maps.model.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
@@ -82,13 +84,30 @@ public class AddLocationActivity extends Activity {
                     Toast.makeText(AddLocationActivity.this, "Must set a Name", Toast.LENGTH_LONG).show();
                     return;
                 }
+                //Build the GeoFence Table
                 ContentValues values = new ContentValues();
                 values.put(GeoFenceTable.NAME, editPlaceName.getText().toString());
                 values.put(GeoFenceTable.RADIUS, radius);
                 values.put(GeoFenceTable.LATITUDE, lat);
                 values.put(GeoFenceTable.LONGITUDE, lon);
                 Uri ins = AddLocationActivity.this.getContentResolver().insert(TaskManContentProvider.FENCE_URI, values);
-                //lsc.placeCreated(editPlaceName.getText().toString(), lat, lon);
+
+                //Get the table id for a key from the URI
+                int newColumnId = Integer.parseInt(ins.getLastPathSegment());
+
+                //Build the Ingress Table
+                values.clear();
+                values.put(IngressTable.ID, newColumnId);
+                values.put(IngressTable.CONSTRUCT, "");
+                ins = AddLocationActivity.this.getContentResolver().insert(TaskManContentProvider.INGRESS_URI, values);
+
+                //Build the Egress Table
+                values.clear();
+                values.put(EgressTable.ID, newColumnId);
+                values.put(EgressTable.CONSTRUCT, "");
+                ins = AddLocationActivity.this.getContentResolver().insert(TaskManContentProvider.EGRESS_URI, values);
+
+
                 InputMethodManager in = (InputMethodManager) AddLocationActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 in.hideSoftInputFromWindow(AddLocationActivity.this.getWindow().getDecorView().getRootView().getWindowToken(), 0);
                 AddLocationActivity.this.finish();

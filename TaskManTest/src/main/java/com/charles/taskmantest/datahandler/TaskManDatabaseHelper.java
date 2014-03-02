@@ -11,7 +11,7 @@ import android.util.Log;
 public class TaskManDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "taskman.db";
-    private static final int DATABASE_VERSION = 18;
+    private static final int DATABASE_VERSION = 20;
 
     public TaskManDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

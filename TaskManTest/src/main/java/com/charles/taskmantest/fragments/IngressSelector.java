@@ -33,6 +33,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.ingress_layout, view, false);
         idCode = getActivity().getIntent().getLongExtra("id", -1);
+        Log.v("Id Code: ", Long.toString(idCode));
         setupButtons(inflater);
         return v;
     }
@@ -111,14 +112,17 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         this.name = name;
     }
 
+    //Async task to kee
     private class UpdateIngressOptions extends AsyncTask<Cursor, Integer, String> {
 
         @Override
         protected String doInBackground(Cursor... params) {
-            Log.v("Update buttons", "Operating on Cursor");
             Cursor c = params[0];
+            Log.v("Number of Rows: ", Integer.toString(c.getCount()));
             for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
+                Log.v("Id From DB: " , Integer.toString(id));
                 if (id == idCode) {
                     Log.v("Found my match", "found my match");
                 }
