@@ -21,7 +21,9 @@ import android.util.Log;
 import com.charles.taskmantest.MainActivity;
 import com.charles.taskmantest.activities.AddLocationActivity;
 import com.charles.taskmantest.activities.SelectorActivity;
+import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
+import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
 import com.google.android.gms.location.LocationClient;
@@ -123,7 +125,7 @@ public class MyMap extends MapFragment implements
     public void onResume() {
         super.onResume();
         //Resume GPS
-        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500,10, myLocationListener);
+        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, myLocationListener);
         mLocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 10, myLocationListener);
         mLocManager.getLastKnownLocation(Context.LOCATION_SERVICE);
 
@@ -387,6 +389,10 @@ public class MyMap extends MapFragment implements
         values.put(GeoFenceTable.LONGITUDE, lon);
         values.put(GeoFenceTable.RADIUS, radius);
         getActivity().getContentResolver().update(TaskManContentProvider.FENCE_URI, values,GeoFenceTable.ID + "=" + Integer.toString(id), null);
+        values.clear();
+        values.put(IngressTable.CONSTRUCT, "");
+        getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI,values,IngressTable.ID + "=" + Integer.toString(id), null);
+        getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values, EgressTable.ID + "=" + Integer.toString(id), null);
     }
 
     private void insertDB(double lat, double lon, double radius) {

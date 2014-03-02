@@ -2,7 +2,6 @@ package com.charles.taskmantest.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -18,7 +17,7 @@ import android.widget.ImageButton;
 
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.IngressTable;
-import com.charles.taskmantest.datahandler.TaskManContentProvider;
+import com.google.gson.Gson;
 
 /**
  * Created by charles on 12/10/13.
@@ -28,6 +27,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
     private String name = "";
     private View v = null;
     private final int LOADER_ID = 3;
+    private Gson gson = new Gson();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
@@ -42,13 +42,13 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         Log.v("Loader", "Starting Loader");
         String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/ingress_table";
         Uri places = Uri.parse(URL);
-        String[] projection = new String[] {IngressTable.ID, IngressTable.WIFI, IngressTable.SOUND, IngressTable.SMS,IngressTable.AIRPLANE};
+        String[] projection = new String[] {IngressTable.ID, IngressTable.CONSTRUCT};
         return new CursorLoader(getActivity(), places, projection, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v("Ingress Loader Finished loading", "From MyMap");
+        Log.v("Ingress Loader Finished loading", "From Ingress");
         switch (loader.getId()) {
             case LOADER_ID:
                 Log.v("Found my Loader", "Found My  LOADER");
@@ -64,8 +64,6 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     private void setupButtons(LayoutInflater inflater) {
         GridLayout ll = ((GridLayout)v.findViewById(R.id.ingress_layout));
-        ContentValues values = new ContentValues();
-        values.put(IngressTable.ID, idCode);
         for (int i = 0; i < 4; i++) {
             ImageButton b = null;
             switch(i)  {
@@ -74,30 +72,24 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.accessnetworkwifi);
-                    values.put(IngressTable.WIFI, "connect");
                     ll.addView(b);
                     break;
                 case 1:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessbluetooth);
-                    values.put(IngressTable.AIRPLANE, 0);
                     ll.addView(b);
                     break;
                 case 2:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessmic);
-                    values.put(IngressTable.SMS, "SMS");
                     ll.addView(b);
                     break;
                 case 3:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.airplanemodeoff);
-                    values.put(IngressTable.SOUND, 0);
                     ll.addView(b);
 
             }
-
-            assert b != null;
             b.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -106,10 +98,12 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                 }
             });
-            Uri ins = getActivity().getContentResolver().insert(TaskManContentProvider.INGRESS_URI, values);
             getLoaderManager().initLoader(LOADER_ID, null, this);
-
         }
+    }
+
+    private void initTable() {
+
     }
 
     public void changeId(int idCode, String name) {

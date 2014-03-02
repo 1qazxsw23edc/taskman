@@ -39,8 +39,42 @@
                 <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <!--<activity android:name=".geofence.CheckServices"/>-->
-        <!--<activity android:name=".geofence.Fence"/>-->
+        <activity android:name="com.charles.taskmantest.eventhandlers.AreaFence"
+            android:label="SetArea">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.categor.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".eventhandlers.sms.SMS"
+            android:label="SetArea">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.categor.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".eventhandlers.wifi.WifiHandler"
+            android:label="SetArea">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.categor.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".eventhandlers.audio.Audio"
+            android:label="SetArea">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.categor.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".eventhandlers.bluetooth.BlueTooth"
+            android:label="SetArea">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.categor.DEFAULT"/>
+            </intent-filter>
+        </activity>
         <meta-data android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCim_3u4BpRbGIVF7tBBEg7OVSgbuGl8UU"/>
 

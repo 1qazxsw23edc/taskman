@@ -8,6 +8,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +64,6 @@ public class AddLocationActivity extends Activity {
         clat = intent.getDoubleExtra("latitude", 0);
         clon = intent.getDoubleExtra("longitude", 0);
         v = this.getWindow().getDecorView().getRootView();
-        //v = inflater.inflate(R.layout.location_selection, container, false);
 
         final AutoCompleteTextView locationinput = (AutoCompleteTextView) v.findViewById(R.id.location_autocomplete);
         setupAutoCompleteAddress(locationinput);
@@ -106,7 +106,7 @@ public class AddLocationActivity extends Activity {
             //locationinput.setText(getFormattedAddress(currentAddress.get(0)));
             locationinput.setHint(getFormattedAddress(currentAddress.get(0)));
         } catch (IOException ioe) {
-
+            Log.v("EXCEPTION", ioe.getMessage());
         }
 
         locationinput.setAdapter(new AutoCompleteAdapter(this));
@@ -167,6 +167,7 @@ public class AddLocationActivity extends Activity {
                 mSb.append(", ");
             }
         }
+        Log.v("From AddLocationActivity", mSb.toString());
         return mSb.toString();
     }
 

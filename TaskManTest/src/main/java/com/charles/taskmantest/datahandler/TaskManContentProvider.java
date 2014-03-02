@@ -238,10 +238,8 @@ public class TaskManContentProvider extends ContentProvider {
 
     private void checkColumns(String[] projection) {
         String[] available = {GeoFenceTable.LONGITUDE, GeoFenceTable.LATITUDE, GeoFenceTable.EXPIRATION,
-        GeoFenceTable.ID, GeoFenceTable.RADIUS, GeoFenceTable.TRANSITION, GeoFenceTable.NAME, EgressTable.AIRPLANE, EgressTable.ID,
-        EgressTable.SMS, EgressTable.SOUND, EgressTable.TIMEFRAME, EgressTable.WIFI, IngressTable.AIRPLANE,
-        IngressTable.ID, IngressTable.SMS, IngressTable.TIMEFRAME, IngressTable.SOUND, IngressTable.WIFI};
-
+        GeoFenceTable.ID, GeoFenceTable.RADIUS, GeoFenceTable.TRANSITION, GeoFenceTable.NAME, EgressTable.ID,
+                EgressTable.CONSTRUCT, IngressTable.CONSTRUCT, IngressTable.ID, };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

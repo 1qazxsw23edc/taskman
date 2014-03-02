@@ -9,21 +9,13 @@ import android.util.Log;
 public class EgressTable {
     public static final String EGRESS_TABLE = "egress_table";
     public static final String ID = "_id";
-    public static final String AIRPLANE = "airplane";
-    public static final String WIFI = "wifi";
-    public static final String SMS = "sms";
-    public static final String TIMEFRAME = "timeframe";
-    public static final String SOUND = "sound";
+    public static final String CONSTRUCT = "construct";
 
     private static final String DATABASE_CREATE = "create table "
             + EGRESS_TABLE
             +"("
             + ID + " integer primary key not null, "
-            + AIRPLANE + " integer, "
-            + WIFI + " text, "
-            + SMS + " text, "
-            + TIMEFRAME + " text, "
-            + SOUND  + " text "
+            + CONSTRUCT + " text"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {

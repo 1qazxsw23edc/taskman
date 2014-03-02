@@ -102,20 +102,6 @@ public class MainActivity extends Activity implements
     }
 
     /*
-    Next two methods need to be implemented
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    /*
     Custom methods that don't override built in methods
      */
     private void firstRun() {

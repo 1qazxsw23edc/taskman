@@ -2,7 +2,6 @@ package com.charles.taskmantest.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -19,7 +18,6 @@ import android.widget.ImageButton;
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
-import com.charles.taskmantest.datahandler.TaskManContentProvider;
 
 /**
  * Created by charles on 12/10/13.
@@ -43,7 +41,7 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
         Log.v("Loader", "Starting Loader");
         String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/egress_table";
         Uri places = Uri.parse(URL);
-        String[] projection = new String[] {EgressTable.ID, EgressTable.WIFI, EgressTable.SOUND, EgressTable.SMS,EgressTable.AIRPLANE};
+        String[] projection = new String[] {EgressTable.ID, EgressTable.CONSTRUCT};
         return new CursorLoader(getActivity(), places, projection, null, null, null);
     }
 
@@ -65,8 +63,8 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
 
     private void setupButtons(LayoutInflater inflater) {
         GridLayout ll = ((GridLayout)v.findViewById(R.id.egress_layout));
-        ContentValues values = new ContentValues();
-        values.put(IngressTable.ID, idCode);
+        //ContentValues values = new ContentValues();
+        //values.put(IngressTable.ID, idCode);
         for (int i = 0; i < 4; i++) {
             ImageButton b = null;
             switch(i)  {
@@ -75,30 +73,24 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
 
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.accessnetworkwifi);
-                    values.put(IngressTable.WIFI, "connect");
                     ll.addView(b);
                     break;
                 case 1:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessbluetooth);
-                    values.put(IngressTable.AIRPLANE, 0);
                     ll.addView(b);
                     break;
                 case 2:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessmic);
-                    values.put(IngressTable.SMS, "SMS");
                     ll.addView(b);
                     break;
                 case 3:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.airplanemodeoff);
-                    values.put(IngressTable.SOUND, 0);
                     ll.addView(b);
 
             }
-
-            assert b != null;
             b.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -107,7 +99,6 @@ public class EgressSelector extends Fragment implements LoaderManager.LoaderCall
 
                 }
             });
-            Uri ins = getActivity().getContentResolver().insert(TaskManContentProvider.INGRESS_URI, values);
             getLoaderManager().initLoader(LOADER_ID, null, this);
 
         }
