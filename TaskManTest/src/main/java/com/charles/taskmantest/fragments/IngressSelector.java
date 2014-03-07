@@ -20,6 +20,8 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.google.gson.Gson;
 
+import java.util.HashMap;
+
 /**
  * Created by charles on 12/10/13.
  */
@@ -29,6 +31,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
     private View v = null;
     private final int LOADER_ID = 3;
     private Gson gson = new Gson();
+    private HashMap<String, ImageButton> buttonMap = new HashMap<String, ImageButton>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
@@ -74,22 +77,27 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.accessnetworkwifi);
+                    buttonMap.put("wifi", b);
                     ll.addView(b);
                     break;
                 case 1:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessbluetooth);
+                    buttonMap.put("bluetooth", b);
                     ll.addView(b);
                     break;
                 case 2:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.deviceaccessmic);
+                    buttonMap.put("sound", b);
                     ll.addView(b);
                     break;
                 case 3:
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.airplanemodeoff);
+                    buttonMap.put("airplane", b);
                     ll.addView(b);
+                    break;
 
             }
             b.setOnClickListener(new View.OnClickListener() {
