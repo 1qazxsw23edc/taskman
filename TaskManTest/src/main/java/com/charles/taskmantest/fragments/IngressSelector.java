@@ -18,9 +18,11 @@ import android.widget.ImageButton;
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
+import com.charles.taskmantest.datahandler.json.Actions;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by charles on 12/10/13.
@@ -98,12 +100,22 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                     buttonMap.put("airplane", b);
                     ll.addView(b);
                     break;
+                default:
+                    throw new IllegalStateException();
 
             }
             b.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
+                    ImageButton b = (ImageButton)v;
+                    Iterator it = buttonMap.keySet().iterator();
+                    while (it.hasNext()) {
+                        String key = (String)it.next();
+                        if (buttonMap.get(key).equals(b)) {
+                            handleGson(key, b);
+                        }
+                    }
                     Log.v("ImageButton", "Clicked");
 
                 }
@@ -121,6 +133,10 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         this.name = name;
     }
 
+    public void handleGson(String key, ImageButton b) {
+        Log.v("Processing for GSON: ", key);
+    }
+
     //Async task to kee
     private class UpdateIngressOptions extends AsyncTask<Cursor, Integer, String> {
 
@@ -131,11 +147,12 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
                 if (id == idCode) {
-                    String gson = c.getString(c.getColumnIndexOrThrow(EgressTable.CONSTRUCT));
-                    if (gson.length() == 0) {
+                    String gsonString = c.getString(c.getColumnIndexOrThrow(EgressTable.CONSTRUCT));
+                    if (gsonString.length() == 0) {
                         Log.v("Empty GSON", "Empty GSON");
                     } else {
-
+                        gson.toJson(gsonString);
+                        Actions actions = gson.fromJson(gsonString, Actions.class);
                     }
                 }
             }
