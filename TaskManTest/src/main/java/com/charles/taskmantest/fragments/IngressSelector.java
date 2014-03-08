@@ -5,6 +5,7 @@ import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,12 +35,14 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
     private final int LOADER_ID = 3;
     private Gson gson = new Gson();
     private HashMap<String, ImageButton> buttonMap = new HashMap<String, ImageButton>();
+    private Actions actions = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.ingress_layout, view, false);
         idCode = getActivity().getIntent().getLongExtra("id", -1);
         Log.v("Id Code: ", Long.toString(idCode));
+        getLoaderManager().initLoader(LOADER_ID, null, this);
         setupButtons(inflater);
         return v;
     }
@@ -104,11 +107,13 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                     throw new IllegalStateException();
 
             }
+
             b.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
                     ImageButton b = (ImageButton)v;
+
                     Iterator it = buttonMap.keySet().iterator();
                     while (it.hasNext()) {
                         String key = (String)it.next();
@@ -120,12 +125,8 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                 }
             });
-            getLoaderManager().initLoader(LOADER_ID, null, this);
+
         }
-    }
-
-    private void initTable() {
-
     }
 
     public void changeId(int idCode, String name) {
@@ -135,6 +136,11 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     public void handleGson(String key, ImageButton b) {
         Log.v("Processing for GSON: ", key);
+    }
+
+    public boolean buttonToggled(String type) {
+
+        return false;
     }
 
     //Async task to kee
@@ -150,9 +156,10 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                     String gsonString = c.getString(c.getColumnIndexOrThrow(EgressTable.CONSTRUCT));
                     if (gsonString.length() == 0) {
                         Log.v("Empty GSON", "Empty GSON");
+                        actions = new Actions();
                     } else {
                         gson.toJson(gsonString);
-                        Actions actions = gson.fromJson(gsonString, Actions.class);
+                        actions = gson.fromJson(gsonString, Actions.class);
                     }
                 }
             }
@@ -185,7 +192,4 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
             return null;
         }
     }
-
-
-
 }
