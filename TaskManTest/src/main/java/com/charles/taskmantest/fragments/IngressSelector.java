@@ -5,7 +5,6 @@ import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -49,7 +48,6 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.v("Loader", "Starting Loader");
         String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/ingress_table";
         Uri places = Uri.parse(URL);
         String[] projection = new String[] {IngressTable.ID, IngressTable.CONSTRUCT};
