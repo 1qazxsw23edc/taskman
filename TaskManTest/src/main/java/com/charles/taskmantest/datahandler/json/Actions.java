@@ -6,11 +6,11 @@ package com.charles.taskmantest.datahandler.json;
 public class Actions {
     public Actions() { }
 
-    private boolean airplane;
-    private String audio;
-    private SMS sms;
-    private WIFI wifi;
-    private BlueTooth bluetooth;
+    public boolean airplane = false;
+    public Sound audio;
+    public SMS sms;
+    public WIFI wifi;
+    public BlueTooth bluetooth;
 
     public static class SMS {
 

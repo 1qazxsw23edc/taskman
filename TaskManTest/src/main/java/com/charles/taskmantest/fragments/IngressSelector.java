@@ -76,8 +76,6 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
             ImageButton b = null;
             switch(i)  {
                 case 0:
-
-
                     b = (ImageButton) inflater.inflate(R.layout.custom_button, ll, false);
                     b.setImageResource(R.drawable.accessnetworkwifi);
                     buttonMap.put("wifi", b);
@@ -116,7 +114,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                     while (it.hasNext()) {
                         String key = (String)it.next();
                         if (buttonMap.get(key).equals(b)) {
-                            handleGson(key, b);
+                            handleClick(key, b);
                         }
                     }
                     Log.v("ImageButton", "Clicked");
@@ -132,17 +130,106 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         this.name = name;
     }
 
-    public void handleGson(String key, ImageButton b) {
-        Log.v("Processing for GSON: ", key);
+
+    //These handle the individual button clicks each one will start an Intent to change the various parameters
+    public void handleClick(String key, ImageButton b) {
+        boolean on = false;
+        if (key.equals("wifi")) {
+            on = handleWifiClick();
+        } else if (key.equals("bluetooth")) {
+            on = handleBlueToothClick();
+        } else if (key.equals("sound")) {
+            on = handleSoundClick();
+        } else if (key.equals("airplane")) {
+            on = handleAirplaneClick();
+        }
+        toggleButton(on, b);
+        //Log.v("Processing for GSON: ", key);
     }
 
-    public boolean buttonToggled(String type) {
+    public boolean handleWifiClick() {
+        if (actions.wifi != null && actions.wifi.isEnabled()){
+            Log.v("Toggling Wifi Off", "Toggling WIFI OFF");
+            actions.wifi.setEnabled(false);
+            return false;
+        } else {
+            Log.v("Toggling WIFI ON", "Toggling WIFI ON");
+            actions.wifi = new Actions.WIFI();
+            actions.wifi.setEnabled(true);
+        }
+        return true;
+    }
 
+    public boolean handleBlueToothClick() {
+        if (actions.bluetooth != null && actions.bluetooth.isEnabled()) {
+            actions.bluetooth.setEnabled(false);
+            return false;
+        } else {
+            actions.bluetooth = new Actions.BlueTooth();
+            actions.bluetooth.setEnabled(true);
+        }
+        return true;
+    }
+
+    public boolean handleSoundClick() {
+        if (actions.audio != null && actions.audio.isEnabled()) {
+            actions.audio.setEnabled(false);
+            return false;
+        } else {
+            actions.audio = new Actions.Sound();
+            actions.audio.setEnabled(true);
+        }
+        return true;
+    }
+
+    public boolean handleAirplaneClick() {
+        if (actions.airplane) {
+            actions.airplane = false;
+            return false;
+        } else {
+            actions.airplane = true;
+        }
+        return true;
+    }
+
+    //Initialize the buttons with their original state
+    public boolean initializeButtons(String key, ImageButton b) {
+        if (key.equals("wifi")) {
+            if (actions.wifi != null && actions.wifi.isEnabled()) {
+               return true;
+            }
+        } else if (key.equals("bluetooth")) {
+            if (actions.bluetooth != null && actions.bluetooth.isEnabled()) {
+                return true;
+            }
+        } else if (key.equals("sound")) {
+            if (actions.audio != null && actions.audio.isEnabled()) {
+                return true;
+            }
+        } else if (key.equals("airplane")) {
+            if (actions.airplane) {
+                return true;
+            }
+        }
         return false;
     }
 
-    //Async task to kee
+    //Method to modfiy the background of the button based on its current state
+    private void toggleButton(boolean state, ImageButton b) {
+        if (state) {
+            b.setBackgroundResource(R.drawable.translucent_green);
+        } else {
+            b.setBackgroundResource(R.drawable.translucent_grey);
+        }
+    }
+
+    //Async task to read in the JSON from the database and set up the initial @actions state
     private class UpdateIngressOptions extends AsyncTask<Cursor, Integer, String> {
+
+        @Override
+        protected void onPreExecute() {
+
+        }
 
         @Override
         protected String doInBackground(Cursor... params) {
@@ -171,7 +258,13 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
         @Override
         protected void onPostExecute(String result) {
-
+            Iterator it = buttonMap.keySet().iterator();
+            while (it.hasNext()) {
+                String key = (String)it.next();
+                ImageButton b = buttonMap.get(key);
+                boolean enable = initializeButtons(key, b);
+                toggleButton(enable, b);
+            }
         }
     }
 
