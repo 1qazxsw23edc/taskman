@@ -4,6 +4,7 @@ package com.charles.taskmantest.datahandler.json;
  * Created by charles on 2/23/14.
  */
 public class Actions {
+
     public Actions() { }
 
     public boolean airplane = false;

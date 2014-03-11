@@ -17,8 +17,6 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 
 import com.charles.taskmantest.R;
-import com.charles.taskmantest.activities.SelectorActivity;
-import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.json.Actions;
 import com.google.gson.Gson;
@@ -40,7 +38,9 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup view, Bundle savedInstanceState) {
-        v = inflater.inflate(R.layout.ingress_layout, view, false);
+        Bundle args = getArguments();
+        v = inflater.inflate(R.layout.action_selector_layout, view, false);
+
         idCode = getActivity().getIntent().getLongExtra("id", -1);
         Log.v("Id Code: ", Long.toString(idCode));
         getLoaderManager().initLoader(LOADER_ID, null, this);
@@ -129,7 +129,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
 
     //These handle the individual button clicks each one will start an Intent to change the various parameters
-    public void handleClick(String key, ImageButton b) {
+    private void handleClick(String key, ImageButton b) {
         boolean enable = false;
         if (key.equals("wifi")) {
             enable = handleWifiClick();
@@ -143,7 +143,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         toggleButton(enable, b);
     }
 
-    public boolean handleWifiClick() {
+    private boolean handleWifiClick() {
         if (actions.wifi != null && actions.wifi.isEnabled()) {
             actions.wifi.setEnabled(false);
             return false;
@@ -154,7 +154,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         return true;
     }
 
-    public boolean handleBlueToothClick() {
+    private boolean handleBlueToothClick() {
         if (actions.bluetooth != null && actions.bluetooth.isEnabled()) {
             actions.bluetooth.setEnabled(false);
             return false;
@@ -165,7 +165,7 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         return true;
     }
 
-    public boolean handleSoundClick() {
+    private boolean handleSoundClick() {
         if (actions.audio != null && actions.audio.isEnabled()) {
             actions.audio.setEnabled(false);
             return false;
@@ -176,13 +176,17 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
         return true;
     }
 
-    public boolean handleAirplaneClick() {
+    private boolean handleAirplaneClick() {
         if (actions.airplane) {
             actions.airplane = false;
             return false;
         } else {
             actions.airplane = true;
         }
+        return true;
+    }
+
+    private boolean handleSMSClick() {
         return true;
     }
 
@@ -233,10 +237,10 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
                 int id = c.getInt(c.getColumnIndexOrThrow(IngressTable.ID));
                 if (id == idCode) {
-                    String gsonString = c.getString(c.getColumnIndexOrThrow(EgressTable.CONSTRUCT));
+                    String gsonString = c.getString(c.getColumnIndexOrThrow(IngressTable.CONSTRUCT));
                     if (gsonString.length() == 0) {
                         Log.v("Empty GSON", "Empty GSON");
-                        actions = new Actions();
+                            actions = new Actions();
                     } else {
                         gson.toJson(gsonString);
                         actions = gson.fromJson(gsonString, Actions.class);

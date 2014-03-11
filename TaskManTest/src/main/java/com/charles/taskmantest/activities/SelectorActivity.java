@@ -7,8 +7,8 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 
 import com.charles.taskmantest.R;
-import com.charles.taskmantest.fragments.EgressSelector;
 import com.charles.taskmantest.fragments.IngressSelector;
+import com.charles.taskmantest.fragments.EgressSelector;
 
 /**
  * Created by charles on 2/5/14.
@@ -36,7 +36,14 @@ public class SelectorActivity extends Activity {
         Tab1 = ab.newTab().setText("Enter");
         Tab2 = ab.newTab().setText("Leave");
 
+        Bundle ingressBundle = new Bundle();
+        ingressBundle.putString("role", "ingress");
+        ingress.setArguments(ingressBundle);
         Tab1.setTabListener(new TabListener(ingress));
+
+        Bundle egressBundle = new Bundle();
+        egressBundle.putString("role", "egress");
+        egress.setArguments(egressBundle);
         Tab2.setTabListener(new TabListener(egress));
 
         ab.addTab(Tab1);
