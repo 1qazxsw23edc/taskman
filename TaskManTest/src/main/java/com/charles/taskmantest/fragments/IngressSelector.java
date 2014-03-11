@@ -2,6 +2,7 @@ package com.charles.taskmantest.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.app.ProgressDialog;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -16,6 +17,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 
 import com.charles.taskmantest.R;
+import com.charles.taskmantest.activities.SelectorActivity;
 import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.json.Actions;
@@ -104,6 +106,8 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
             }
 
+            //Each button gets a listener.  This registers that listener based on the type of button
+            //set with the key in the @buttonMap
             b.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -117,43 +121,33 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                             handleClick(key, b);
                         }
                     }
-                    Log.v("ImageButton", "Clicked");
-
                 }
             });
 
         }
     }
 
-    public void changeId(int idCode, String name) {
-        this.idCode = idCode;
-        this.name = name;
-    }
-
 
     //These handle the individual button clicks each one will start an Intent to change the various parameters
     public void handleClick(String key, ImageButton b) {
-        boolean on = false;
+        boolean enable = false;
         if (key.equals("wifi")) {
-            on = handleWifiClick();
+            enable = handleWifiClick();
         } else if (key.equals("bluetooth")) {
-            on = handleBlueToothClick();
+            enable = handleBlueToothClick();
         } else if (key.equals("sound")) {
-            on = handleSoundClick();
+            enable = handleSoundClick();
         } else if (key.equals("airplane")) {
-            on = handleAirplaneClick();
+            enable = handleAirplaneClick();
         }
-        toggleButton(on, b);
-        //Log.v("Processing for GSON: ", key);
+        toggleButton(enable, b);
     }
 
     public boolean handleWifiClick() {
-        if (actions.wifi != null && actions.wifi.isEnabled()){
-            Log.v("Toggling Wifi Off", "Toggling WIFI OFF");
+        if (actions.wifi != null && actions.wifi.isEnabled()) {
             actions.wifi.setEnabled(false);
             return false;
         } else {
-            Log.v("Toggling WIFI ON", "Toggling WIFI ON");
             actions.wifi = new Actions.WIFI();
             actions.wifi.setEnabled(true);
         }
@@ -225,10 +219,11 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
 
     //Async task to read in the JSON from the database and set up the initial @actions state
     private class UpdateIngressOptions extends AsyncTask<Cursor, Integer, String> {
-
+        ProgressDialog progressDialog;
         @Override
         protected void onPreExecute() {
-
+            progressDialog= ProgressDialog.show(IngressSelector.this.getActivity(), "Loading Actions",
+                    "Loading Action Data", true);
         }
 
         @Override
@@ -265,18 +260,11 @@ public class IngressSelector extends Fragment implements LoaderManager.LoaderCal
                 boolean enable = initializeButtons(key, b);
                 toggleButton(enable, b);
             }
+            progressDialog.dismiss();
         }
     }
 
     private class WriteOutData extends AsyncTask<String, Integer, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            return null;
-        }
-    }
-
-    private class CheckData extends AsyncTask<String, Integer, Boolean> {
 
         @Override
         protected Boolean doInBackground(String... params) {
