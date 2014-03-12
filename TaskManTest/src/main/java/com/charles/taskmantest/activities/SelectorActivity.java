@@ -7,16 +7,15 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 
 import com.charles.taskmantest.R;
-import com.charles.taskmantest.fragments.IngressSelector;
-import com.charles.taskmantest.fragments.EgressSelector;
+import com.charles.taskmantest.fragments.ActionSelector;
 
 /**
  * Created by charles on 2/5/14.
  */
 public class SelectorActivity extends Activity {
     ActionBar.Tab Tab1,Tab2;
-    Fragment ingress = new IngressSelector();
-    Fragment egress = new EgressSelector();
+    Fragment ingress = new ActionSelector();
+    Fragment egress = new ActionSelector();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
