@@ -90,7 +90,7 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onDestroy() {
-        Log.v("DESTROYED", (String)getArguments().get("role"));
+        new WriteOutData().execute(gson.toJson(actions));
         super.onDestroy();
     }
 
@@ -305,6 +305,7 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
 
         @Override
         protected Boolean doInBackground(String... params) {
+            Log.v("WRITE", params[0]);
             return null;
         }
     }
