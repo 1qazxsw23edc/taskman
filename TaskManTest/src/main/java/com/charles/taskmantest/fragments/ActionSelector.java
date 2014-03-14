@@ -306,6 +306,7 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
         @Override
         protected Boolean doInBackground(String... params) {
             Log.v("WRITE", params[0]);
+            System.out.println("Simple git test");
             return null;
         }
     }
