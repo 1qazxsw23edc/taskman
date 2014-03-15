@@ -3,6 +3,7 @@ package com.charles.taskmantest.fragments;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -19,6 +20,7 @@ import android.widget.ImageButton;
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
+import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.datahandler.json.Actions;
 import com.google.gson.Gson;
 
@@ -90,7 +92,20 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onDestroy() {
-        new WriteOutData().execute(gson.toJson(actions));
+
+        String json = gson.toJson(actions);
+        if (json == null || json.equals("")) return ;
+        ContentValues values = new ContentValues();
+        if (getArguments().get("role").equals("ingress")) {
+            values.put(IngressTable.CONSTRUCT, json);
+            ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI, values,
+                    IngressTable.ID + "=" + Long.toString(idCode), null);
+        } else if (getArguments().get("role").equals("egress")) {
+            values.put(EgressTable.CONSTRUCT, json);
+            ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values,
+                    EgressTable.ID + "=" + Long.toString(idCode), null);
+        }
+        //new WriteOutData().execute(gson.toJson(actions));
         super.onDestroy();
     }
 
@@ -306,7 +321,17 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
         @Override
         protected Boolean doInBackground(String... params) {
             Log.v("WRITE", params[0]);
-            System.out.println("Simple git test");
+            if (params[0] == null || params[0].equals("")) return null;
+            ContentValues values = new ContentValues();
+            if (getArguments().get("role").equals("ingress")) {
+                values.put(IngressTable.CONSTRUCT, params[0]);
+                ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI, values,
+                        IngressTable.ID + "=" + Long.toString(idCode), null);
+            } else if (getArguments().get("role").equals("egress")) {
+                values.put(EgressTable.CONSTRUCT, params[0]);
+                ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values,
+                        EgressTable.ID + "=" + Long.toString(idCode), null);
+            }
             return null;
         }
     }
