@@ -237,6 +237,10 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
+    public void resetId(long idCode) {
+        this.idCode = idCode;
+    }
+
 
     //Initialize the buttons with their original state
     public boolean initializeButtons(String key, ImageButton b) {
@@ -313,26 +317,6 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
                 toggleButton(enable, b);
             }
             progressDialog.dismiss();
-        }
-    }
-
-    private class WriteOutData extends AsyncTask<String, Integer, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            Log.v("WRITE", params[0]);
-            if (params[0] == null || params[0].equals("")) return null;
-            ContentValues values = new ContentValues();
-            if (getArguments().get("role").equals("ingress")) {
-                values.put(IngressTable.CONSTRUCT, params[0]);
-                ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI, values,
-                        IngressTable.ID + "=" + Long.toString(idCode), null);
-            } else if (getArguments().get("role").equals("egress")) {
-                values.put(EgressTable.CONSTRUCT, params[0]);
-                ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values,
-                        EgressTable.ID + "=" + Long.toString(idCode), null);
-            }
-            return null;
         }
     }
 }

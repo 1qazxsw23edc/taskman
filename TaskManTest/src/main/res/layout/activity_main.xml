@@ -21,11 +21,6 @@
             android:layout_height="match_parent"
             class="android.view.View"/>
     </FrameLayout>
-    <!--<fragment
-        android:id="@+id/content_view"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        class="com.charles.taskmantest.Fragments.MyMap"/>-->
 
     <fragment
         android:id="@+id/drawer_view"

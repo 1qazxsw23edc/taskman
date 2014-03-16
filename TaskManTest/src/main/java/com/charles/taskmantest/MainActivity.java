@@ -46,7 +46,6 @@ public class MainActivity extends Activity implements
         ab.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 
 
-
         //Detect whether or not it's first run
         mPreferences = getSharedPreferences("com.charles.TaskManTest", MODE_PRIVATE);
 
@@ -71,12 +70,19 @@ public class MainActivity extends Activity implements
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         switch(menuItem.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(mDrawerList);
+                if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
+                    mDrawerLayout.closeDrawer(mDrawerList);
+                } else {
+                    mDrawerLayout.openDrawer(mDrawerList);
+                }
+                break;
             case R.id.new_action:
                 mDrawerLayout.openDrawer(mDrawerList);
+                break;
             case R.id.remove_place:
                 //adapter.remove(currentPlace);
                 //mDrawerLayout.openDrawer(mDrawerList);
+                break;
         }
         String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/fences_table";
         Uri placesUri = Uri.parse(URL);

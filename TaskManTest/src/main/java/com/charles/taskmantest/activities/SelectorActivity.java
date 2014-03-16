@@ -5,9 +5,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.view.MenuItem;
+import android.widget.ListView;
 
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.fragments.ActionSelector;
+import com.charles.taskmantest.fragments.DrawerListFragment;
 
 /**
  * Created by charles on 2/5/14.
@@ -16,6 +20,8 @@ public class SelectorActivity extends Activity {
     ActionBar.Tab Tab1,Tab2;
     Fragment ingress = new ActionSelector();
     Fragment egress = new ActionSelector();
+    private static DrawerLayout mDrawerLayout;
+    private static ListView mDrawerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,10 @@ public class SelectorActivity extends Activity {
         ab.setHomeButtonEnabled(true);
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+        //Construct the slide out drawer
+        //mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        //mDrawerList = (ListView) findViewById(R.id.drawer_view);
 
 
 
@@ -49,6 +59,54 @@ public class SelectorActivity extends Activity {
         ab.addTab(Tab2);
 
 
+    }
+
+    /*@Override
+    public void onItemSelected(long id) {
+        this.getIntent().putExtra("id", id);
+        ((ActionSelector)ingress).resetId(id);
+        ((ActionSelector)egress).resetId(id);
+
+        getActionBar().removeAllTabs();
+
+        getActionBar().addTab(Tab1);
+        getActionBar().addTab(Tab2);
+
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    @Override
+    public boolean onItemDeleted(long id) {
+        mDrawerLayout.closeDrawer(mDrawerList);
+        return false;
+    }
+
+    @Override
+    public boolean onItemAdded(long id) {
+        mDrawerLayout.closeDrawer(mDrawerList);
+        return false;
+    }
+
+    @Override
+    public void toggleDrawerOpen() {
+        mDrawerLayout.openDrawer(mDrawerList);
+    }
+
+    @Override
+    public void toggleDrawerClosed() {
+        if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
+            mDrawerLayout.closeDrawer(mDrawerList);
+        }
+    }*/
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                break;
+        }
+        return (super.onOptionsItemSelected(menuItem));
     }
 
     private class TabListener implements ActionBar.TabListener {
