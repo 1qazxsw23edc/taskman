@@ -43,36 +43,44 @@
             android:label="SetArea">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.categor.DEFAULT"/>
+                <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <activity android:name=".eventhandlers.sms.SMS"
-            android:label="SetArea">
+            android:label="SMS">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.categor.DEFAULT"/>
+                <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <activity android:name=".eventhandlers.wifi.WifiHandler"
-            android:label="SetArea">
+            android:label="WifiHandler">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.categor.DEFAULT"/>
+                <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
         <activity android:name=".eventhandlers.audio.Audio"
-            android:label="SetArea">
+            android:label="Audio">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.categor.DEFAULT"/>
+                <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <activity android:name=".eventhandlers.bluetooth.BlueTooth"
-            android:label="SetArea">
+            android:label="BlueTooth">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.categor.DEFAULT"/>
+                <action android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".services.WifiIntentService"
+            android:label="WifiIntentService">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <meta-data android:name="com.google.android.maps.v2.API_KEY"

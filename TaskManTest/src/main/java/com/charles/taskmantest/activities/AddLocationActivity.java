@@ -29,6 +29,10 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
@@ -41,7 +45,7 @@ import java.util.Locale;
 /**
  * Created by charles on 2/7/14.
  */
-public class AddLocationActivity extends Activity {
+public class AddLocationActivity extends Activity{
 
     private static ArrayAdapter<String> autoCompleteAdapter;
     private View v;
@@ -52,9 +56,12 @@ public class AddLocationActivity extends Activity {
     private final int radMin = 1;
     private final int radMax = 500;
     private static double radius;
+    private int id = 0;
     private static TextView radiusView;
     private static EditText editPlaceName;
     private static SeekBar radiusBar;
+    private static Geofence.Builder builder = new Geofence.Builder();
+    private Geofence geoFence;
 
 
     @Override
@@ -94,7 +101,7 @@ public class AddLocationActivity extends Activity {
 
                 //Get the table id for a key from the URI
                 int newColumnId = Integer.parseInt(ins.getLastPathSegment());
-
+                id = newColumnId;
                 //Build the Ingress Table
                 values.clear();
                 values.put(IngressTable.ID, newColumnId);
@@ -110,6 +117,13 @@ public class AddLocationActivity extends Activity {
 
                 InputMethodManager in = (InputMethodManager) AddLocationActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                 in.hideSoftInputFromWindow(AddLocationActivity.this.getWindow().getDecorView().getRootView().getWindowToken(), 0);
+
+                builder.setCircularRegion(lat, lon, new Float(radius));
+                builder.setRequestId(Integer.toString(newColumnId));
+                builder.setExpirationDuration(Geofence.NEVER_EXPIRE);
+                builder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+                geoFence = builder.build();
+
                 AddLocationActivity.this.finish();
             }
         });
@@ -322,8 +336,10 @@ public class AddLocationActivity extends Activity {
         String name = editPlaceName.getText().toString();
         if (name != null && name.length() > 0 && lat != 0 && lon != 0) {
             intent.putExtra("name", name);
+            intent.putExtra("id", id);
             intent.putExtra("lat", lat);
             intent.putExtra("lon", lon);
+            intent.putExtra("radius", radius);
             setResult(RESULT_OK, intent);
         } else {
             setResult(this.RESULT_CANCELED);

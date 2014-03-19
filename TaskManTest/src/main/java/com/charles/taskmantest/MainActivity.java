@@ -3,6 +3,7 @@ package com.charles.taskmantest;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,13 +20,18 @@ import android.widget.Toast;
 import com.charles.taskmantest.fragments.DrawerListFragment;
 import com.charles.taskmantest.fragments.MyMap;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.MapFragment;
 
 
 public class MainActivity extends Activity implements
         DrawerListFragment.ItemSelectedListener,
-        MyMap.MapIsLoaded {
+        MyMap.MapIsLoaded,
+        GooglePlayServicesClient.ConnectionCallbacks,
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        LocationClient.OnAddGeofencesResultListener {
 
     private static DrawerLayout mDrawerLayout;
     private SharedPreferences mPreferences;
@@ -35,6 +41,18 @@ public class MainActivity extends Activity implements
     static final int REQUEST_CODE_RECOVER_PLAY_SERVICES = 1001;
     public final static int LOCATION_REQUEST_CODE = 1002;
     public final static int SELECTOR_REQUEST_CODE = 1003;
+
+    //Geofence variables
+    // Holds the location client
+    private LocationClient mLocationClient;
+    // Stores the PendingIntent used to request geofence monitoring
+    private PendingIntent mGeofenceRequestIntent;
+    // Defines the allowable request types.
+    public static enum REQUEST_TYPE = {ADD}
+
+    private REQUEST_TYPE mRequestType;
+    // Flag that indicates if a request is underway.
+    private boolean mInProgress;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,14 +207,44 @@ public class MainActivity extends Activity implements
                         String name = data.getExtras().getString("name");
                         double lat = data.getExtras().getDouble("lat");
                         double lon = data.getExtras().getDouble("lon");
+                        double radius = data.getExtras().getDouble("radius");
+                        int id = data.getExtras().getInt("id");
                         if (name != null && lat != 0 && lon != 0) {
                             FragmentManager fm = getFragmentManager();
                             MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
-                            ((MyMap)mMap).placeCreated(name, lat, lon);
+                            ((MyMap)mMap).placeCreated(name, lat, lon, radius, id);
                         }
                     }
                 }
         }
         super.onActivityResult(requestCode,resultCode,data);
+    }
+
+    //These methods override the Location Services methods to add a Geofence into the system.
+
+    /*
+    Captain's Log, I need to implement these methods to create the Geofence.  The @onAddGeofencesResult will tell me
+    when I have successfully added a geofence.  I need to investigate whether or not I can then call the placAdded method
+    from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
+    and I can handle a failure if it happens.
+     */
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onDisconnected() {
+
+    }
+
+    @Override
+    public void onAddGeofencesResult(int i, String[] strings) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }

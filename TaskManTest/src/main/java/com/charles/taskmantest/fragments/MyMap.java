@@ -96,7 +96,7 @@ public class MyMap extends MapFragment implements
         this.setRetainInstance(true);
     }
 
-    public void placeCreated(String name, double lat, double lon) {
+    public void placeCreated(String name, double lat, double lon, double radius, int id) {
         LatLng position = new LatLng(lat, lon);
         CameraPosition camperPosition = new CameraPosition.Builder().target(position).zoom(16.0f).build();
         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(camperPosition);
@@ -393,10 +393,6 @@ public class MyMap extends MapFragment implements
         values.put(IngressTable.CONSTRUCT, "");
         getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI,values,IngressTable.ID + "=" + Integer.toString(id), null);
         getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values, EgressTable.ID + "=" + Integer.toString(id), null);
-    }
-
-    private void insertDB(double lat, double lon, double radius) {
-
     }
 
     /*
