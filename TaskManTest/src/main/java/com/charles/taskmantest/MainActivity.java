@@ -17,13 +17,19 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.charles.taskmantest.eventhandlers.AreaFence;
 import com.charles.taskmantest.fragments.DrawerListFragment;
 import com.charles.taskmantest.fragments.MyMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationStatusCodes;
 import com.google.android.gms.maps.MapFragment;
+
+import java.util.ArrayList;
 
 
 public class MainActivity extends Activity implements
@@ -47,12 +53,9 @@ public class MainActivity extends Activity implements
     private LocationClient mLocationClient;
     // Stores the PendingIntent used to request geofence monitoring
     private PendingIntent mGeofenceRequestIntent;
-    // Defines the allowable request types.
-    public static enum REQUEST_TYPE = {ADD}
+    private Geofence.Builder fenceBuilder = new Geofence.Builder();
 
-    private REQUEST_TYPE mRequestType;
-    // Flag that indicates if a request is underway.
-    private boolean mInProgress;
+    private ArrayList<Geofence> fencesList = new ArrayList();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +89,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
             case android.R.id.home:
                 if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
                     mDrawerLayout.closeDrawer(mDrawerList);
@@ -194,7 +197,7 @@ public class MainActivity extends Activity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
+        switch (requestCode) {
             case REQUEST_CODE_RECOVER_PLAY_SERVICES:
                 if (resultCode == RESULT_CANCELED) {
                     Toast.makeText(this, "Google Play Services muse be installed.", Toast.LENGTH_LONG).show();
@@ -211,14 +214,25 @@ public class MainActivity extends Activity implements
                         int id = data.getExtras().getInt("id");
                         if (name != null && lat != 0 && lon != 0) {
                             FragmentManager fm = getFragmentManager();
-                            MapFragment mMap = (MapFragment)fm.findFragmentById(R.id.content_view);
-                            ((MyMap)mMap).placeCreated(name, lat, lon, radius, id);
+                            MapFragment mMap = (MapFragment) fm.findFragmentById(R.id.content_view);
+                            ((MyMap) mMap).placeCreated(name, lat, lon, radius, id);
                         }
+
+                        fenceBuilder.setCircularRegion(lat, lon, (float)radius);
+                        fenceBuilder.setExpirationDuration(100000);
+                        fenceBuilder.setRequestId(Integer.toString(id));
+                        fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT);
+                        Geofence fence = fenceBuilder.build();
+                        fencesList.add(fence);
+                        mLocationClient = new LocationClient(this, this, this);
+                        mLocationClient.connect();
+
                     }
                 }
         }
-        super.onActivityResult(requestCode,resultCode,data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     //These methods override the Location Services methods to add a Geofence into the system.
 
@@ -228,9 +242,18 @@ public class MainActivity extends Activity implements
     from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
     and I can handle a failure if it happens.
      */
+
     @Override
     public void onConnected(Bundle bundle) {
 
+        mGeofenceRequestIntent = createRequestPendingIntent();
+
+        LocationRequest localRequest = LocationRequest.create();
+        localRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        localRequest.setInterval(5000);
+
+        mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
+        Log.v("Added GeoFence: " , "Added INTENT to Services");
     }
 
     @Override
@@ -239,12 +262,50 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public void onAddGeofencesResult(int i, String[] strings) {
 
+    public void onAddGeofencesResult(int i, String[] strings) {
+        // If adding the geofences was successful
+        int statusCode = LocationStatusCodes.SUCCESS;
+        if (LocationStatusCodes.SUCCESS == statusCode) {
+            /*
+             * Handle successful addition of geofences here.
+             * You can send out a broadcast intent or update the UI.
+             * geofences into the Intent's extended data.
+             */
+        } else {
+            // If adding the geofences failed
+            /*
+             * Report errors here.
+             * You can log the error using Log.e() or update
+             * the UI.
+             */
+        }
+        mLocationClient.disconnect();
+        Log.v("GeoFence Added: ", "Added Fence Successfully");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
+
+
+    private PendingIntent createRequestPendingIntent() {
+
+        if (null != mGeofenceRequestIntent) {
+
+            return mGeofenceRequestIntent;
+
+        } else {
+
+
+            Intent intent = new Intent(this, AreaFence.class);
+            return PendingIntent.getService(
+                    this,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+    }
+
 }

@@ -90,6 +90,8 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
 
     }
 
+
+    //Save the data to the database when the Fragment is destroyed
     @Override
     public void onDestroy() {
 
@@ -109,6 +111,8 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
         super.onDestroy();
     }
 
+    //This needs some help, it's to setup the buttons and bind actions to them when the fragment is created
+    //it's super ugly right now and needs some help.
     private void setupButtons(LayoutInflater inflater) {
         GridLayout ll = ((GridLayout)v.findViewById(R.id.ingress_layout));
         for (int i = 0; i < 4; i++) {
@@ -227,6 +231,7 @@ public class ActionSelector extends Fragment implements LoaderManager.LoaderCall
         return true;
     }
 
+    //I'm not sure if I'm using this right now.
     public void reloadActions() {
         if (getArguments().get("role").equals("ingress")) {
             Log.v("RELOAD", "reloading from ingress");

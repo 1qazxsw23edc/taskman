@@ -83,6 +83,12 @@
                 <action android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <service
+            android:name=".eventhandlers.AreaFence"
+            android:exported="false"
+            android:label="TaskManTestService">
+
+        </service>
         <meta-data android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyCim_3u4BpRbGIVF7tBBEg7OVSgbuGl8UU"/>
 

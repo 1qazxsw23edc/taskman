@@ -26,6 +26,8 @@ import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -53,7 +55,7 @@ public class MyMap extends MapFragment implements
         GoogleMap.OnMarkerDragListener,
         LoaderManager.LoaderCallbacks<Cursor>,
         GoogleMap.OnMapLongClickListener,
-        DrawerListFragment.ItemSelectedListener {
+        DrawerListFragment.ItemSelectedListener{
 
     private static GoogleMap gmap = null;
     final int RQS_GooglePlayServices = 1;
