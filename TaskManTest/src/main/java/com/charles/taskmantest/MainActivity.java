@@ -34,11 +34,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity implements
         DrawerListFragment.ItemSelectedListener,
-        MyMap.MapIsLoaded,
-        GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationClient.OnAddGeofencesResultListener {
-
+        MyMap.MapIsLoaded {
     private static DrawerLayout mDrawerLayout;
     private SharedPreferences mPreferences;
     private static MyMap mapFragment = null;
@@ -50,10 +46,10 @@ public class MainActivity extends Activity implements
 
     //Geofence variables
     // Holds the location client
-    private LocationClient mLocationClient;
+    //private LocationClient mLocationClient;
     // Stores the PendingIntent used to request geofence monitoring
     private PendingIntent mGeofenceRequestIntent;
-    private Geofence.Builder fenceBuilder = new Geofence.Builder();
+
 
     private ArrayList<Geofence> fencesList = new ArrayList();
 
@@ -217,95 +213,9 @@ public class MainActivity extends Activity implements
                             MapFragment mMap = (MapFragment) fm.findFragmentById(R.id.content_view);
                             ((MyMap) mMap).placeCreated(name, lat, lon, radius, id);
                         }
-
-                        fenceBuilder.setCircularRegion(lat, lon, (float)radius);
-                        fenceBuilder.setExpirationDuration(100000);
-                        fenceBuilder.setRequestId(Integer.toString(id));
-                        fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT);
-                        Geofence fence = fenceBuilder.build();
-                        fencesList.add(fence);
-                        mLocationClient = new LocationClient(this, this, this);
-                        mLocationClient.connect();
-
                     }
                 }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
-
-
-    //These methods override the Location Services methods to add a Geofence into the system.
-
-    /*
-    Captain's Log, I need to implement these methods to create the Geofence.  The @onAddGeofencesResult will tell me
-    when I have successfully added a geofence.  I need to investigate whether or not I can then call the placAdded method
-    from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
-    and I can handle a failure if it happens.
-     */
-
-    @Override
-    public void onConnected(Bundle bundle) {
-
-        mGeofenceRequestIntent = createRequestPendingIntent();
-
-        LocationRequest localRequest = LocationRequest.create();
-        localRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        localRequest.setInterval(5000);
-
-        mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
-        Log.v("Added GeoFence: " , "Added INTENT to Services");
-    }
-
-    @Override
-    public void onDisconnected() {
-
-    }
-
-    @Override
-
-    public void onAddGeofencesResult(int i, String[] strings) {
-        // If adding the geofences was successful
-        int statusCode = LocationStatusCodes.SUCCESS;
-        if (LocationStatusCodes.SUCCESS == statusCode) {
-            /*
-             * Handle successful addition of geofences here.
-             * You can send out a broadcast intent or update the UI.
-             * geofences into the Intent's extended data.
-             */
-        } else {
-            // If adding the geofences failed
-            /*
-             * Report errors here.
-             * You can log the error using Log.e() or update
-             * the UI.
-             */
-        }
-        mLocationClient.disconnect();
-        Log.v("GeoFence Added: ", "Added Fence Successfully");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-
-    private PendingIntent createRequestPendingIntent() {
-
-        if (null != mGeofenceRequestIntent) {
-
-            return mGeofenceRequestIntent;
-
-        } else {
-
-
-            Intent intent = new Intent(this, AreaFence.class);
-            return PendingIntent.getService(
-                    this,
-                    0,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-    }
-
 }

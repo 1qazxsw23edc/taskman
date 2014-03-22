@@ -254,6 +254,9 @@ public class MyMap extends MapFragment implements
                 Intent place = new Intent(getActivity(), SelectorActivity.class);
                 if (place.resolveActivity(getActivity().getPackageManager()) != null) {
                     place.putExtra("id", id);
+                    place.putExtra("radius", (float)p.getRadius());//Has to be a float for the Geofence, so I just cast it here.
+                    place.putExtra("lat", p.getLatitude());
+                    place.putExtra("lon", p.getLongitude());
                     getActivity().startActivityForResult(place, MainActivity.SELECTOR_REQUEST_CODE);
                 }
             }
