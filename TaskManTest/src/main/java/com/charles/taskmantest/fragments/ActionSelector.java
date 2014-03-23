@@ -2,12 +2,9 @@ package com.charles.taskmantest.fragments;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -25,16 +22,8 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
 import com.charles.taskmantest.datahandler.json.Actions;
-import com.charles.taskmantest.eventhandlers.AreaFence;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationStatusCodes;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -71,10 +60,7 @@ public class ActionSelector extends Fragment implements
         lat = getActivity().getIntent().getDoubleExtra("lat", -1);
         lon = getActivity().getIntent().getDoubleExtra("lon", -1);
         radius = getActivity().getIntent().getFloatExtra("radius", -1);
-        //Log.v("Params: ", "Lat: " + Double.toString(getActivity().getIntent().getDoubleExtra("lat", -1)));
-        //Log.v("Params: ", "Radius: " + Float.toString(getActivity().getIntent().getFloatExtra("radius", -1)));
-        //Log.v("Id Code: ", Long.toString(idCode));
-        //Modify the variables based on id
+
         if (args.get("role").equals("ingress")) {
             cursorID = IngressTable.ID;
             cursorConstruct = IngressTable.CONSTRUCT;
@@ -86,11 +72,12 @@ public class ActionSelector extends Fragment implements
             cursorURL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/egress_table";
             getLoaderManager().initLoader(EGRESS_LOADER_ID, null, this);
         }
-
         setupButtons(inflater);
         return v;
     }
 
+    //The next three methods are created for the Database loader.  They load the database and then fill
+    //in the GUI based on what's found in the database.
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri places = Uri.parse(cursorURL);
@@ -100,7 +87,6 @@ public class ActionSelector extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        //Log.v("Ingress Loader Finished loading", "From Ingress");
         if (loader.getId() == INGRESS_LOADER_ID || loader.getId() == EGRESS_LOADER_ID) {
             new UpdateIngressOptions().execute(cursor);
         }
@@ -128,7 +114,6 @@ public class ActionSelector extends Fragment implements
             ActionSelector.this.getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values,
                     EgressTable.ID + "=" + Long.toString(idCode), null);
         }
-        //new WriteOutData().execute(gson.toJson(actions));
         super.onDestroy();
     }
 
@@ -205,6 +190,7 @@ public class ActionSelector extends Fragment implements
         toggleButton(enable, b);
     }
 
+    //Each of these methods sets parameters in the JSON
     private boolean handleWifiClick() {
         if (actions.wifi != null && actions.wifi.isEnabled()) {
             actions.wifi.setEnabled(false);
@@ -252,21 +238,6 @@ public class ActionSelector extends Fragment implements
         return true;
     }
 
-    //I'm not sure if I'm using this right now.
-    public void reloadActions() {
-        if (getArguments().get("role").equals("ingress")) {
-            Log.v("RELOAD", "reloading from ingress");
-            getLoaderManager().restartLoader(INGRESS_LOADER_ID, null, this);
-        } else if (getArguments().get("role").equals("egress")) {
-            Log.v("RELOAD", "reloading from egress");
-            getLoaderManager().restartLoader(EGRESS_LOADER_ID, null, this);
-        }
-    }
-
-    public void resetId(long idCode) {
-        this.idCode = idCode;
-    }
-
 
     //Initialize the buttons with their original state
     public boolean initializeButtons(String key, ImageButton b) {
@@ -303,12 +274,15 @@ public class ActionSelector extends Fragment implements
     //Async task to read in the JSON from the database and set up the initial @actions state
     private class UpdateIngressOptions extends AsyncTask<Cursor, Integer, String> {
         ProgressDialog progressDialog;
+
+        //Spinny dialog to delay application until database is loaded
         @Override
         protected void onPreExecute() {
             progressDialog= ProgressDialog.show(ActionSelector.this.getActivity(), "Loading Actions",
                     "Loading Action Data", true);
         }
 
+        //Pull the JSON from the database for the relevant fence area.  If there is no JSON then create it.
         @Override
         protected String doInBackground(Cursor... params) {
             Cursor c = params[0];
@@ -334,6 +308,7 @@ public class ActionSelector extends Fragment implements
 
         }
 
+        //Iterate over the buttonmap and enable or disable buttons
         @Override
         protected void onPostExecute(String result) {
             Iterator it = buttonMap.keySet().iterator();
@@ -344,114 +319,6 @@ public class ActionSelector extends Fragment implements
                 toggleButton(enable, b);
             }
             progressDialog.dismiss();
-        }
-    }
-
-    private class CreateGeofence extends AsyncTask<HashMap<String, Object>, Integer, String> implements
-            GooglePlayServicesClient.ConnectionCallbacks,
-            GooglePlayServicesClient.OnConnectionFailedListener,
-            LocationClient.OnAddGeofencesResultListener  {
-
-        private LocationClient mLocationClient;
-        private PendingIntent mGeofenceRequestIntent;
-        private ArrayList<Geofence> fencesList = new ArrayList();
-        private Geofence.Builder fenceBuilder = new Geofence.Builder();
-
-
-        @Override
-        protected String doInBackground(HashMap<String, Object>... params) {
-            HashMap parameters = params[0];
-
-            String role = (String)ActionSelector.this.getArguments().get("role");
-            fenceBuilder.setCircularRegion(lat, lon, (float)radius);
-            fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
-
-            fenceBuilder.setRequestId(Integer.toString((int)idCode)+ ":" + role);//Store both the id and the role for differentiation later
-
-            if (role.equals("ingress")) {
-                fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
-            } else {
-                fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT);
-            }
-
-            Geofence fence = fenceBuilder.build();
-            fencesList.add(fence);
-            mLocationClient = new LocationClient(ActionSelector.this.getActivity(), this, this);
-            mLocationClient.connect();
-            return null;
-        }
-
-        //These methods override the Location Services methods to add a Geofence into the system.
-
-    /*
-    Captain's Log, I need to implement these methods to create the Geofence.  The @onAddGeofencesResult will tell me
-    when I have successfully added a geofence.  I need to investigate whether or not I can then call the placAdded method
-    from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
-    and I can handle a failure if it happens.
-     */
-
-        @Override
-        public void onConnected(Bundle bundle) {
-
-            mGeofenceRequestIntent = createRequestPendingIntent();
-
-            LocationRequest localRequest = LocationRequest.create();
-            localRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-            localRequest.setInterval(5000);
-
-            mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
-            Log.v("Added GeoFence: " , "Added INTENT to Services");
-        }
-
-        @Override
-        public void onDisconnected() {
-
-        }
-
-        @Override
-
-        public void onAddGeofencesResult(int i, String[] strings) {
-            // If adding the geofences was successful
-            int statusCode = LocationStatusCodes.SUCCESS;
-            if (LocationStatusCodes.SUCCESS == statusCode) {
-            /*
-             * Handle successful addition of geofences here.
-             * You can send out a broadcast intent or update the UI.
-             * geofences into the Intent's extended data.
-             */
-            } else {
-                // If adding the geofences failed
-            /*
-             * Report errors here.
-             * You can log the error using Log.e() or update
-             * the UI.
-             */
-            }
-            mLocationClient.disconnect();
-            Log.v("GeoFence Added: ", "Added Fence Successfully");
-        }
-
-        @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
-
-        }
-
-        private PendingIntent createRequestPendingIntent() {
-
-            if (null != mGeofenceRequestIntent) {
-
-                return mGeofenceRequestIntent;
-
-            } else {
-
-
-                Intent intent = new Intent(ActionSelector.this.getActivity(), AreaFence.class);
-                return PendingIntent.getService(
-                        ActionSelector.this.getActivity(),
-                        0,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-            }
         }
     }
 }

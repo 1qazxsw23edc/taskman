@@ -45,9 +45,6 @@ public class DrawerListFragment extends ListFragment implements
     private static View mainView;
     private static double currentLatitude = 0.0f;
     private static double currentLongitude = 0.0f;
-    private static double viewLatitude = 0.0f;
-    private static double viewLongitude = 0.0f;
-    private static double radius = 0.0f;
 
 
     @Override

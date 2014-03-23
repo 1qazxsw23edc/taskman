@@ -1,12 +1,8 @@
 package com.charles.taskmantest.eventhandlers;
 
-import android.app.Activity;
 import android.app.IntentService;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationClient;
@@ -28,7 +24,7 @@ public class AreaFence extends IntentService {
     protected void onHandleIntent(Intent intent) {
         //Toast.makeText(null, "A fence happened", Toast.LENGTH_LONG).show();
         List<Geofence> fenceList = LocationClient.getTriggeringGeofences(intent);
-        Log.v("Intent from fnece: ", Integer.toString(fenceList.size()));
+        Log.v("Intent from fence: ", Integer.toString(fenceList.size()));
         Log.v("Intent from fence: ", "SUCCESS!");
     }
 }

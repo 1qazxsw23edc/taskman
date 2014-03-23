@@ -29,10 +29,7 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
@@ -45,7 +42,7 @@ import java.util.Locale;
 /**
  * Created by charles on 2/7/14.
  */
-public class AddLocationActivity extends Activity{
+public class AddLocationActivity extends Activity {
 
     private static ArrayAdapter<String> autoCompleteAdapter;
     private View v;
@@ -87,6 +84,7 @@ public class AddLocationActivity extends Activity{
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (editPlaceName.getText().toString().trim().length() == 0) {
                     Toast.makeText(AddLocationActivity.this, "Must set a Name", Toast.LENGTH_LONG).show();
                     return;
@@ -129,6 +127,24 @@ public class AddLocationActivity extends Activity{
         });
 
 
+    }
+
+    @Override
+    public void finish() {
+        Intent intent = new Intent();
+        String name = editPlaceName.getText().toString();
+        if (name != null && name.length() > 0 && lat != 0 && lon != 0) {
+            intent.putExtra("name", name);
+            intent.putExtra("id", id);
+            intent.putExtra("lat", lat);
+            intent.putExtra("lon", lon);
+            intent.putExtra("radius", radius);
+            setResult(RESULT_OK, intent);
+        } else {
+            setResult(this.RESULT_CANCELED);
+        }
+
+        super.finish();
     }
 
     //Setup the autocomplete
@@ -287,7 +303,7 @@ public class AddLocationActivity extends Activity{
                             double lat = clat;
                             double lon = clon;
 
-                            addressList = getListFromCoord(mGeocoder,(String) constraint, lat, lon, 500, 0);
+                            addressList = getListFromCoord(mGeocoder, (String) constraint, lat, lon, 500, 0);
                             //
                         } catch (IOException e) {
                         }
@@ -328,23 +344,5 @@ public class AddLocationActivity extends Activity{
             };
             return myFilter;
         }
-    }
-
-    @Override
-    public void finish() {
-        Intent intent = new Intent();
-        String name = editPlaceName.getText().toString();
-        if (name != null && name.length() > 0 && lat != 0 && lon != 0) {
-            intent.putExtra("name", name);
-            intent.putExtra("id", id);
-            intent.putExtra("lat", lat);
-            intent.putExtra("lon", lon);
-            intent.putExtra("radius", radius);
-            setResult(RESULT_OK, intent);
-        } else {
-            setResult(this.RESULT_CANCELED);
-        }
-
-        super.finish();
     }
 }

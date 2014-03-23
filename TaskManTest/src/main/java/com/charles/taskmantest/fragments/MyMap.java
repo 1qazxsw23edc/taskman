@@ -3,6 +3,7 @@ package com.charles.taskmantest.fragments;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -25,10 +26,12 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
-import com.charles.taskmantest.interfaces.UpdatePlacesCallBack;
+import com.charles.taskmantest.eventhandlers.AreaFence;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationStatusCodes;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -55,22 +58,26 @@ public class MyMap extends MapFragment implements
         GoogleMap.OnMarkerDragListener,
         LoaderManager.LoaderCallbacks<Cursor>,
         GoogleMap.OnMapLongClickListener,
-        DrawerListFragment.ItemSelectedListener{
+        DrawerListFragment.ItemSelectedListener,
+        GooglePlayServicesClient.ConnectionCallbacks,
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        LocationClient.OnAddGeofencesResultListener{
 
     private static GoogleMap gmap = null;
-    final int RQS_GooglePlayServices = 1;
     private static int distance = 100;
     private static LocationManager mLocManager;
     private static LocationListener myLocationListener;
-    private static LocationClient mLocationClient;
     private static Location loc = null;
     protected static double lat;
     protected static double lon;
     private boolean currentLocationSet = false;
     private static HashMap<Long, Place> fencesMap = new HashMap<Long, Place>();
     private static Activity mActivity;
-    private static UpdatePlacesCallBack upc = null;
     private static final int LOADER_ID = 2;
+
+    private LocationClient mLocationClient = null;
+    private Geofence.Builder fenceBuilder = null;
+    private PendingIntent mGeofenceRequestIntent;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -91,7 +98,9 @@ public class MyMap extends MapFragment implements
         }
         distance = 100;
         myLocationListener = new MyLocationListener();
+        mLocationClient = new LocationClient(getActivity(), this, this);
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        fenceBuilder = new Geofence.Builder();
         gmap.setOnMarkerClickListener(this);
         gmap.setOnMapLongClickListener(this);
         fillData();
@@ -130,8 +139,6 @@ public class MyMap extends MapFragment implements
         mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, myLocationListener);
         mLocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500, 10, myLocationListener);
         mLocManager.getLastKnownLocation(Context.LOCATION_SERVICE);
-
-
     }
 
     @Override
@@ -173,9 +180,12 @@ public class MyMap extends MapFragment implements
                 p.setLatitude(dragLat);
                 p.setLongitude(dragLon);
                 updateDB(dragLat, dragLon, p.getCircle().getRadius(), (int)p.getId());
+
+                //new RegisterGeofence().execute(p);
                 break;
             }
         }
+        mLocationClient.connect();
     }
 
     //Long click on the map to add a new place
@@ -273,6 +283,131 @@ public class MyMap extends MapFragment implements
         }
     }
 
+    /*
+    Data Manager Code here.  Initiate a Loader and implement the callbacks so that it can listen for
+    changes to the SQLite database.
+     */
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.v("Loader", "Starting Loader");
+        String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/fences_table";
+        Uri places = Uri.parse(URL);
+        String[] projection = new String[] {GeoFenceTable.ID, GeoFenceTable.NAME, GeoFenceTable.RADIUS,GeoFenceTable.LATITUDE,GeoFenceTable.LONGITUDE};
+        return new CursorLoader(getActivity(), places, projection, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        Log.v("Loader Finished loading", "From MyMap");
+        switch (loader.getId()) {
+            case LOADER_ID:
+                new UpdatePlaces().execute(cursor);
+                break;
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    //These methods override the Location Services methods to add a Geofence into the system.
+
+    /*
+    Captain's Log, I need to implement these methods to create the Geofence.  The @onAddGeofencesResult will tell me
+    when I have successfully added a geofence.  I need to investigate whether or not I can then call the placAdded method
+    from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
+    and I can handle a failure if it happens.
+     */
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        ArrayList<Geofence> fencesList = new ArrayList();
+        Log.v("Geofence: ", "Location Services Connected!");
+        mGeofenceRequestIntent = createRequestPendingIntent();
+
+        Iterator it = fencesMap.values().iterator();
+
+        while (it.hasNext()) {
+            Place p = (Place)it.next();
+            fencesList.add(p.getEgressFence());
+            fencesList.add(p.getIngressFence());
+        }
+
+        mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
+        Log.v("Added GeoFence: " , "Added INTENT to Services");
+    }
+
+    @Override
+    public void onDisconnected() {
+        Log.v("Location Services: ", "Geofence disconnected");
+    }
+
+    @Override
+    public void onAddGeofencesResult(int i, String[] strings) {
+        // If adding the geofences was successful
+        int statusCode = LocationStatusCodes.SUCCESS;
+        if (LocationStatusCodes.SUCCESS == statusCode) {
+            /*
+             * Handle successful addition of geofences here.
+             * You can send out a broadcast intent or update the UI.
+             * geofences into the Intent's extended data.
+             */
+        } else {
+            // If adding the geofences failed
+            /*
+             * Report errors here.
+             * You can log the error using Log.e() or update
+             * the UI.
+             */
+        }
+        mLocationClient.disconnect();
+        //mLocationClient = null;
+        Log.v("GeoFence Added: ", "Added Fence Successfully");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    private PendingIntent createRequestPendingIntent() {
+
+        if (null != mGeofenceRequestIntent) {
+
+            return mGeofenceRequestIntent;
+
+        } else {
+            Intent intent = new Intent(getActivity(), AreaFence.class);
+            return PendingIntent.getService(
+                    getActivity(),
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+    }
+
+    private void fillData() {
+        Log.v("Calling Fill Data", "From MyMap");
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+    }
+
+
+    //Update the database with new values
+    private void updateDB(double lat, double lon, double radius, int id) {
+        ContentValues values = new ContentValues();
+        values.put(GeoFenceTable.LATITUDE, lat);
+        values.put(GeoFenceTable.LONGITUDE, lon);
+        values.put(GeoFenceTable.RADIUS, radius);
+        getActivity().getContentResolver().update(TaskManContentProvider.FENCE_URI, values,GeoFenceTable.ID + "=" + Integer.toString(id), null);
+        values.clear();
+        values.put(IngressTable.CONSTRUCT, "");
+        getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI,values,IngressTable.ID + "=" + Integer.toString(id), null);
+        getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values, EgressTable.ID + "=" + Integer.toString(id), null);
+    }
+
 
     //Listen for location changes and update the map with that information
     private class MyLocationListener implements LocationListener {
@@ -308,42 +443,6 @@ public class MyMap extends MapFragment implements
         }
     }
 
-    /*
-    Data Manager Code here.  Initiate a Loader and implement the callbacks so that it can listen for
-    changes to the SQLite database.
-     */
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.v("Loader", "Starting Loader");
-        String URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/fences_table";
-        Uri places = Uri.parse(URL);
-        String[] projection = new String[] {GeoFenceTable.ID, GeoFenceTable.NAME, GeoFenceTable.RADIUS,GeoFenceTable.LATITUDE,GeoFenceTable.LONGITUDE};
-        return new CursorLoader(getActivity(), places, projection, null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.v("Loader Finished loading", "From MyMap");
-        switch (loader.getId()) {
-            case LOADER_ID:
-                new UpdatePlaces().execute(cursor);
-                break;
-        }
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
-    private void fillData() {
-        Log.v("Calling Fill Data", "From MyMap");
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-    }
-
-
     private class UpdatePlaces extends AsyncTask<Cursor, Integer, Place[]> {
 
         @Override
@@ -367,6 +466,7 @@ public class MyMap extends MapFragment implements
             }
             Place[] placesArray = new Place[places.size()];
             places.toArray(placesArray);
+
             return placesArray;
         }
 
@@ -384,20 +484,8 @@ public class MyMap extends MapFragment implements
                 if (fencesMap.containsKey(p.getId())) continue;
                 createGeoFence(p);
             }
+            mLocationClient.connect();
         }
-    }
-
-    //Update the database with new values
-    private void updateDB(double lat, double lon, double radius, int id) {
-        ContentValues values = new ContentValues();
-        values.put(GeoFenceTable.LATITUDE, lat);
-        values.put(GeoFenceTable.LONGITUDE, lon);
-        values.put(GeoFenceTable.RADIUS, radius);
-        getActivity().getContentResolver().update(TaskManContentProvider.FENCE_URI, values,GeoFenceTable.ID + "=" + Integer.toString(id), null);
-        values.clear();
-        values.put(IngressTable.CONSTRUCT, "");
-        getActivity().getContentResolver().update(TaskManContentProvider.INGRESS_URI,values,IngressTable.ID + "=" + Integer.toString(id), null);
-        getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values, EgressTable.ID + "=" + Integer.toString(id), null);
     }
 
     /*
@@ -465,6 +553,22 @@ public class MyMap extends MapFragment implements
 
         public void setCircle(Circle circle) {
             this.circle = circle;
+        }
+
+        public Geofence getIngressFence() {
+            fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
+            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+            fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
+            fenceBuilder.setRequestId(Integer.toString(id) + ":ingress");
+            return fenceBuilder.build();
+        }
+
+        public Geofence getEgressFence() {
+            fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
+            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+            fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
+            fenceBuilder.setRequestId(Integer.toString(id) + ":egress");
+            return fenceBuilder.build();
         }
     }
 
