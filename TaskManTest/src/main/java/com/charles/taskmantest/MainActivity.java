@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -17,16 +18,11 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.charles.taskmantest.eventhandlers.AreaFence;
 import com.charles.taskmantest.fragments.DrawerListFragment;
 import com.charles.taskmantest.fragments.MyMap;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationStatusCodes;
 import com.google.android.gms.maps.MapFragment;
 
 import java.util.ArrayList;
@@ -138,9 +134,9 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    public boolean onItemDeleted(long id) {
+    public boolean onItemDeleted(Context context, long id) {
         mDrawerLayout.closeDrawer(mDrawerList);
-        mapFragment.onItemDeleted(id);
+        mapFragment.onItemDeleted(MainActivity.this, id);
         return false;
     }
 
@@ -162,7 +158,6 @@ public class MainActivity extends Activity implements
         }
     }
 
-    @Override
     public void finishedLoading() {
 
     }

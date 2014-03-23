@@ -48,6 +48,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -64,7 +65,8 @@ public class MyMap extends MapFragment implements
         DrawerListFragment.ItemSelectedListener,
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationClient.OnAddGeofencesResultListener{
+        LocationClient.OnAddGeofencesResultListener,
+        LocationClient.OnRemoveGeofencesResultListener{
 
     private static GoogleMap gmap = null;
     private static int distance = 100;
@@ -78,9 +80,12 @@ public class MyMap extends MapFragment implements
     private static Activity mActivity;
     private static final int LOADER_ID = 2;
 
-    private LocationClient mLocationClient = null;
-    private Geofence.Builder fenceBuilder = null;
+    private enum REQUEST_TYPE  {ADD, REMOVE_INTENT, REMOVE_LIST}
+    private REQUEST_TYPE mRequestType;
+    private static LocationClient mLocationClient = null;
+    private static Geofence.Builder fenceBuilder = null;
     private PendingIntent mGeofenceRequestIntent;
+    private List mGeofencesToRemove;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -101,7 +106,7 @@ public class MyMap extends MapFragment implements
         }
         distance = 100;
         myLocationListener = new MyLocationListener();
-        mLocationClient = new LocationClient(getActivity(), this, this);
+        //mLocationClient = new LocationClient(getActivity(), this, this);
         mLocManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
         fenceBuilder = new Geofence.Builder();
         gmap.setOnMarkerClickListener(this);
@@ -161,7 +166,7 @@ public class MyMap extends MapFragment implements
         LatLng dragPosition = marker.getPosition();
         double dragLat = dragPosition.latitude;
         double dragLon = dragPosition.longitude;
-
+        mRequestType = REQUEST_TYPE.ADD;
         //Find the marker associated with a place and redraw the circle plus update map
         Iterator it = fencesMap.values().iterator();
         while (it.hasNext()) {
@@ -172,12 +177,12 @@ public class MyMap extends MapFragment implements
                 p.setLatitude(dragLat);
                 p.setLongitude(dragLon);
                 updateDB(dragLat, dragLon, p.getCircle().getRadius(), (int)p.getId());
-
-                //new RegisterGeofence().execute(p);
                 break;
             }
         }
-        mLocationClient.connect();
+
+        //mLocationClient = new LocationClient(getActivity(), this, this);
+        //mLocationClient.connect();
     }
 
     //Long click on the map to add a new place
@@ -230,11 +235,21 @@ public class MyMap extends MapFragment implements
     }
 
     @Override
-    public boolean onItemDeleted(long id) {
+    public boolean onItemDeleted(Context context, long id) {
+        Log.v("Geofence: ", "Deleting an Item  " + Long.toString(id));
         Place p = fencesMap.get(id);
         if (p.getCircle() != null) p.getCircle().remove();
         if (p.getMarker() != null) p.getMarker().remove();
         fencesMap.remove(id);
+
+
+        mRequestType = REQUEST_TYPE.REMOVE_LIST;
+        mGeofencesToRemove = new ArrayList();
+        mGeofencesToRemove.add(Long.toString(id) + ":ingress");
+        mGeofencesToRemove.add(Long.toString(id) + ":egress");
+
+        mLocationClient = new LocationClient(context, this, this);
+        mLocationClient.connect();
         return false;
     }
 
@@ -320,20 +335,20 @@ public class MyMap extends MapFragment implements
     */
     @Override
     public void onConnected(Bundle bundle) {
-        ArrayList<Geofence> fencesList = new ArrayList();
-        Log.v("Geofence: ", "Location Services Connected!");
-        mGeofenceRequestIntent = createRequestPendingIntent();
-
-        Iterator it = fencesMap.values().iterator();
-
-        while (it.hasNext()) {
-            Place p = (Place)it.next();
-            fencesList.add(p.getEgressFence());
-            fencesList.add(p.getIngressFence());
+        switch (mRequestType) {
+            case ADD:
+                Log.v("Added GeoFence: " , "Added INTENT to Services");
+                updateFences();
+                break;
+            case REMOVE_INTENT:
+                break;
+            case REMOVE_LIST:
+                mLocationClient.removeGeofences(mGeofencesToRemove, this);
+                Log.v("Geofence: ", "Succesfully Removed Geofence");
+                break;
+            default:
+                break;
         }
-
-        mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
-        Log.v("Added GeoFence: " , "Added INTENT to Services");
     }
 
     @Override
@@ -342,10 +357,10 @@ public class MyMap extends MapFragment implements
     }
 
     @Override
-    public void onAddGeofencesResult(int i, String[] strings) {
+    public void onAddGeofencesResult(int statusCode, String[] strings) {
         // If adding the geofences was successful
-        int statusCode = LocationStatusCodes.SUCCESS;
         if (LocationStatusCodes.SUCCESS == statusCode) {
+            Log.v("GeoFence Added: ", "Added Fence Successfully");
             /*
              * Handle successful addition of geofences here.
              * You can send out a broadcast intent or update the UI.
@@ -360,8 +375,18 @@ public class MyMap extends MapFragment implements
              */
         }
         mLocationClient.disconnect();
-        //mLocationClient = null;
-        Log.v("GeoFence Added: ", "Added Fence Successfully");
+        mLocationClient = null;
+
+    }
+
+    @Override
+    public void onRemoveGeofencesByRequestIdsResult(int i, String[] strings) {
+
+    }
+
+    @Override
+    public void onRemoveGeofencesByPendingIntentResult(int i, PendingIntent pendingIntent) {
+
     }
 
     @Override
@@ -404,6 +429,26 @@ public class MyMap extends MapFragment implements
         getActivity().getContentResolver().update(TaskManContentProvider.EGRESS_URI, values, EgressTable.ID + "=" + Integer.toString(id), null);
     }
 
+    private void updateFences() {
+        if (mLocationClient == null || !mLocationClient.isConnected()) {
+            Log.v("Geofence: ", "Not CONNECTED");
+            return;
+        }
+        ArrayList<Geofence> fencesList = new ArrayList();
+        mGeofenceRequestIntent = createRequestPendingIntent();
+
+        Iterator it = fencesMap.values().iterator();
+
+        while (it.hasNext()) {
+            Place p = (Place)it.next();
+            fencesList.add(p.getEgressFence());
+            fencesList.add(p.getIngressFence());
+        }
+        mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
+        mLocationClient.disconnect();
+        mLocationClient = null;
+    }
+
 
     //Listen for location changes and update the map with that information
     private class MyLocationListener implements LocationListener {
@@ -416,7 +461,6 @@ public class MyMap extends MapFragment implements
             DrawerListFragment.setCurrentLongitude(lon);
             if (!currentLocationSet) {
                 gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lon), 15));
-
                 currentLocationSet = true;
             }
 
@@ -479,9 +523,13 @@ public class MyMap extends MapFragment implements
             for (int i = 0; i < result.length; i++) {
                 Place p = result[i];
                 //Don't re-create places
-                if (fencesMap.containsKey(p.getId())) continue;
+                if (fencesMap.containsKey(p.getId())) {
+                    continue;
+                }
                 createGeoFence(p);
             }
+            mRequestType = REQUEST_TYPE.ADD;
+            mLocationClient = new LocationClient(getActivity(), MyMap.this , MyMap.this);
             mLocationClient.connect();
         }
     }
@@ -568,6 +616,10 @@ public class MyMap extends MapFragment implements
             fenceBuilder.setRequestId(Integer.toString(id) + ":egress");
             return fenceBuilder.build();
         }
+    }
+
+    public interface MapIsLoaded {
+
     }
 
 }

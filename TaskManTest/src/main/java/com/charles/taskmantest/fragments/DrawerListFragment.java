@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -97,7 +98,7 @@ public class DrawerListFragment extends ListFragment implements
     //Define the callback
     public interface ItemSelectedListener {
         public void onItemSelected(long id);
-        public boolean onItemDeleted(long id);
+        public boolean onItemDeleted(Context context, long id);
         public boolean onItemAdded(long id);
         public void toggleDrawerOpen();
         public void toggleDrawerClosed();
@@ -150,7 +151,7 @@ public class DrawerListFragment extends ListFragment implements
                 getActivity().getContentResolver().delete(TaskManContentProvider.FENCE_URI, GeoFenceTable.ID + "=" + id, null);
                 getActivity().getContentResolver().delete(TaskManContentProvider.EGRESS_URI, EgressTable.ID + "=" + id, null);
                 getActivity().getContentResolver().delete(TaskManContentProvider.INGRESS_URI, IngressTable.ID + "=" + id, null);
-                onItemSelected.onItemDeleted(id);
+                onItemSelected.onItemDeleted(getActivity(), id);
             }
         }); 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
