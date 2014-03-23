@@ -7,6 +7,7 @@ import android.util.Log;
 
 /**
  * Created by charles on 11/10/13.
+ * Helper class  to create the database and migrate it when a new version is created.
  */
 public class TaskManDatabaseHelper extends SQLiteOpenHelper {
 

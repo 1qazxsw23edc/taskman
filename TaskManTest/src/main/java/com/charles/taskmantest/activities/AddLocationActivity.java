@@ -61,6 +61,7 @@ public class AddLocationActivity extends Activity {
     private Geofence geoFence;
 
 
+    //Inflate the view and insert the new tables in the database.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,10 +81,13 @@ public class AddLocationActivity extends Activity {
         radiusBar.setMax(radMax);
         setupRadiusSeekBar(radiusBar);
 
+
         Button button = (Button) v.findViewById(R.id.searchButton);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //I put the creation code in the button click so that it only creates the database entries if you actually assign something
+                //to the fence.
 
                 if (editPlaceName.getText().toString().trim().length() == 0) {
                     Toast.makeText(AddLocationActivity.this, "Must set a Name", Toast.LENGTH_LONG).show();
@@ -125,8 +129,6 @@ public class AddLocationActivity extends Activity {
                 AddLocationActivity.this.finish();
             }
         });
-
-
     }
 
     @Override

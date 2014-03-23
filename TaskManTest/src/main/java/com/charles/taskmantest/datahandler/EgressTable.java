@@ -5,6 +5,7 @@ import android.util.Log;
 
 /**
  * Created by charles on 11/10/13.
+ * Creates a table to manage the data that drives the actions taken when you leave a fenced area
  */
 public class EgressTable {
     public static final String EGRESS_TABLE = "egress_table";

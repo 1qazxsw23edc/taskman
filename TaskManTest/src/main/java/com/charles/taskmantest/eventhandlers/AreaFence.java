@@ -11,6 +11,8 @@ import java.util.List;
 
 /**
  * Created by charles on 10/7/13.
+ * This is the service that gets ran when you enter or leave a fenced area.  It doesn't do a whole
+ * lot right now because I haven't gotten that far.
  */
 public class AreaFence extends IntentService {
 

@@ -29,6 +29,9 @@ import java.util.Iterator;
 
 /**
  * Created by charles on 12/10/13.
+ * This Fragment is representative of a tab.  It has a role so that it's aware of whether or not
+ * it's the kind for entering or leaving a fenced area.  This doesn't have any real implications other
+ * than this Fragment knowing which table to write to in the database.
  */
 public class ActionSelector extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor> {

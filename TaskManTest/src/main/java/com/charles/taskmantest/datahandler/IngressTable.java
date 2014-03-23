@@ -5,6 +5,7 @@ import android.util.Log;
 
 /**
  * Created by charles on 11/10/13.
+ * Just like the EgressTable this just stores teh JSON for when you enter a fenced area.
  */
 public class IngressTable {
     public static final String INGRESS_TABLE = "ingress_table";

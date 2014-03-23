@@ -32,6 +32,8 @@ import com.charles.taskmantest.datahandler.TaskManContentProvider;
 
 /**
  * Created by charles on 11/23/13.
+ * This Fragment creates the pull-out drawer.  It listens to the database and updates itself when
+ * a new entry is made.  It also handles deletion of entries.
  */
 public class DrawerListFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor>{

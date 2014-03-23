@@ -5,6 +5,7 @@ import android.util.Log;
 
 /**
  * Created by charles on 11/10/13.
+ * This is the primary table, it stores the main information about each of the fences.
  */
 public class GeoFenceTable {
 
@@ -34,6 +35,7 @@ public class GeoFenceTable {
         database.execSQL(DATABASE_CREATE);
     }
 
+    //This is the method to modify the table when I create a new version
     public static void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         Log.w(GeoFenceTable.class.getName(), "Upgrading database from version " + oldVersion + " to " + newVersion
                 + ", which will destroy all old data");

@@ -52,6 +52,9 @@ import java.util.Iterator;
 
 /**
  * Created by charles on 10/16/13.
+ * The great beating heart of the application.  This draws the map and handles a lot of the interactions
+ * with the database.  It's what allows you to long press and create a new place.  Start an Activity to
+ * name and instantiate a new place.  It also manages the creation of Geofences.
  */
 public class MyMap extends MapFragment implements
         GoogleMap.OnMarkerClickListener,
@@ -105,17 +108,6 @@ public class MyMap extends MapFragment implements
         gmap.setOnMapLongClickListener(this);
         fillData();
         this.setRetainInstance(true);
-    }
-
-    public void placeCreated(String name, double lat, double lon, double radius, int id) {
-        LatLng position = new LatLng(lat, lon);
-        CameraPosition camperPosition = new CameraPosition.Builder().target(position).zoom(16.0f).build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(camperPosition);
-        gmap.animateCamera(cameraUpdate);
-    }
-
-    public interface MapIsLoaded {
-        public void finishedLoading();
     }
 
     @Override
@@ -219,6 +211,14 @@ public class MyMap extends MapFragment implements
         fencesMap.put(p.getId(), p);
     }
 
+
+    public void placeCreated(String name, double lat, double lon, double radius, int id) {
+        LatLng position = new LatLng(lat, lon);
+        CameraPosition camperPosition = new CameraPosition.Builder().target(position).zoom(16.0f).build();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(camperPosition);
+        gmap.animateCamera(cameraUpdate);
+    }
+
     //Listeners that handle places based on the id they're assigned in the database.
     @Override
     public void onItemSelected(long id) {
@@ -313,15 +313,11 @@ public class MyMap extends MapFragment implements
 
     }
 
-    //These methods override the Location Services methods to add a Geofence into the system.
-
-    /*
-    Captain's Log, I need to implement these methods to create the Geofence.  The @onAddGeofencesResult will tell me
-    when I have successfully added a geofence.  I need to investigate whether or not I can then call the placAdded method
-    from my Map object and update it with the new fence then.  That means that it was successfully added into the location services
-    and I can handle a failure if it happens.
-     */
-
+    /*These methods override the Location Services methods to add a Geofence into the system.
+    I still need to change some things here.  For instance there's no checking to make sure that it's
+    not already creating a Geofence.  There's also no error handling if the Google Play Services are not
+    available.  I'm also not yet handling connection problems to Google Play Services.
+    */
     @Override
     public void onConnected(Bundle bundle) {
         ArrayList<Geofence> fencesList = new ArrayList();
@@ -443,6 +439,8 @@ public class MyMap extends MapFragment implements
         }
     }
 
+    //This task reads the database in the background and handles updating the Map with new data
+    //when it's created.
     private class UpdatePlaces extends AsyncTask<Cursor, Integer, Place[]> {
 
         @Override

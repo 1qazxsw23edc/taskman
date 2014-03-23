@@ -11,10 +11,11 @@ import android.widget.ListView;
 
 import com.charles.taskmantest.R;
 import com.charles.taskmantest.fragments.ActionSelector;
-import com.charles.taskmantest.fragments.DrawerListFragment;
 
 /**
  * Created by charles on 2/5/14.
+ * This class creates a View that shows the two fragments for Entering and Leaving a fenced area
+ * it assigns them to tabs and manages the switches between the tabs.
  */
 public class SelectorActivity extends Activity {
     ActionBar.Tab Tab1,Tab2;
@@ -35,13 +36,6 @@ public class SelectorActivity extends Activity {
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        //Construct the slide out drawer
-        //mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        //mDrawerList = (ListView) findViewById(R.id.drawer_view);
-
-
-
-
         Tab1 = ab.newTab().setText("Enter");
         Tab2 = ab.newTab().setText("Leave");
 
@@ -60,44 +54,6 @@ public class SelectorActivity extends Activity {
 
 
     }
-
-    /*@Override
-    public void onItemSelected(long id) {
-        this.getIntent().putExtra("id", id);
-        ((ActionSelector)ingress).resetId(id);
-        ((ActionSelector)egress).resetId(id);
-
-        getActionBar().removeAllTabs();
-
-        getActionBar().addTab(Tab1);
-        getActionBar().addTab(Tab2);
-
-        mDrawerLayout.closeDrawer(mDrawerList);
-    }
-
-    @Override
-    public boolean onItemDeleted(long id) {
-        mDrawerLayout.closeDrawer(mDrawerList);
-        return false;
-    }
-
-    @Override
-    public boolean onItemAdded(long id) {
-        mDrawerLayout.closeDrawer(mDrawerList);
-        return false;
-    }
-
-    @Override
-    public void toggleDrawerOpen() {
-        mDrawerLayout.openDrawer(mDrawerList);
-    }
-
-    @Override
-    public void toggleDrawerClosed() {
-        if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
-            mDrawerLayout.closeDrawer(mDrawerList);
-        }
-    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {

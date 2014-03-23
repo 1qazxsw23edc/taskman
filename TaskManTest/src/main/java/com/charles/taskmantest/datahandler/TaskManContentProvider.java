@@ -16,6 +16,8 @@ import java.util.HashSet;
 
 /**
  * Created by charles on 11/10/13.
+ * This class is where most of the magic for interacting with the database happens.  This handles
+ * all of the CRUD operations.
  */
 public class TaskManContentProvider extends ContentProvider {
 
@@ -236,6 +238,7 @@ public class TaskManContentProvider extends ContentProvider {
         return rowsUpdated;
     }
 
+    //Helper to verify that the columns exist.
     private void checkColumns(String[] projection) {
         String[] available = {GeoFenceTable.LONGITUDE, GeoFenceTable.LATITUDE, GeoFenceTable.EXPIRATION,
         GeoFenceTable.ID, GeoFenceTable.RADIUS, GeoFenceTable.TRANSITION, GeoFenceTable.NAME, EgressTable.ID,
