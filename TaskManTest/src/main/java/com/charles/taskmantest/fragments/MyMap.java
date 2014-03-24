@@ -430,7 +430,7 @@ public class MyMap extends MapFragment implements
     }
 
     private void updateFences() {
-        if (mLocationClient == null || !mLocationClient.isConnected()) {
+        if (mLocationClient == null || !mLocationClient.isConnected() || fencesMap.isEmpty()) {
             Log.v("Geofence: ", "Not CONNECTED");
             return;
         }
@@ -441,8 +441,7 @@ public class MyMap extends MapFragment implements
 
         while (it.hasNext()) {
             Place p = (Place)it.next();
-            fencesList.add(p.getEgressFence());
-            fencesList.add(p.getIngressFence());
+            fencesList.add(p.getFence());
         }
         mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
         mLocationClient.disconnect();
@@ -601,19 +600,11 @@ public class MyMap extends MapFragment implements
             this.circle = circle;
         }
 
-        public Geofence getIngressFence() {
+        public Geofence getFence() {
             fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
-            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
             fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
-            fenceBuilder.setRequestId(Integer.toString(id) + ":ingress");
-            return fenceBuilder.build();
-        }
-
-        public Geofence getEgressFence() {
-            fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
-            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
-            fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
-            fenceBuilder.setRequestId(Integer.toString(id) + ":egress");
+            fenceBuilder.setRequestId(Integer.toString(id));
             return fenceBuilder.build();
         }
     }
