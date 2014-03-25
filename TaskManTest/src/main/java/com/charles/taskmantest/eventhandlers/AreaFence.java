@@ -2,14 +2,21 @@ package com.charles.taskmantest.eventhandlers;
 
 import android.app.IntentService;
 import android.app.LoaderManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.charles.taskmantest.MainActivity;
+import com.charles.taskmantest.R;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationClient;
@@ -29,6 +36,8 @@ public class AreaFence extends IntentService implements
     private ArrayList triggerIds = new ArrayList();
     private String URL = null;
     private final int LOADER_ID = 5;
+    private enum GTYPE {ENTER, EXIT};
+    private GTYPE gType;
 
     public AreaFence() {
         super("AreaFence");
@@ -67,15 +76,18 @@ public class AreaFence extends IntentService implements
             if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/ingress_table";
                 Log.v("Geofence: ", "Modifying URL for entry");
+                gType = GTYPE.ENTER;
             } else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                 URL = "content://com.charles.taskmantest.datahandler.TaskManContentProvider/egress_table";
                 Log.v("Geofence: ", "Modifying URL for exit");
+                gType = GTYPE.EXIT;
             }
 
             for (int i = 0; i < fenceList.size(); i++) {
                 String id = ((Geofence)fenceList.get(i)).getRequestId();
                 triggerIds.add(id);
             }
+            sendNotification("test");
         }
     }
 
@@ -95,5 +107,44 @@ public class AreaFence extends IntentService implements
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    private void sendNotification(String test) {
+        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+
+        //Construct a task stack
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
+        //Add the main activity to the task stack as the parent
+        stackBuilder.addParentStack(MainActivity.class);
+
+        //Push the content Intent onto the stack
+        stackBuilder.addNextIntent(notificationIntent);
+
+        //Get a PendingIntent containing the entire back stack
+        PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //Get a nofification builder that's compatible with the platform versions >=4
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        //Set the notification contents
+        builder.setSmallIcon(R.drawable.add_action)
+                .setContentTitle("From Geofence: " + getType())
+                .setContentText("From Geofence" + getType())
+                .setContentIntent(notificationPendingIntent);
+
+        //Get an instance of the Notification manager
+        NotificationManager mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+
+        //Issue the notifications
+        mNotificationManager.notify(0, builder.build());
+    }
+
+    private String getType() {
+        if (gType == GTYPE.ENTER) {
+            return "Enter";
+        } else {
+            return "Exit";
+        }
     }
 }
