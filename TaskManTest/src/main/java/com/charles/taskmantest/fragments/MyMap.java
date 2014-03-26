@@ -26,7 +26,6 @@ import com.charles.taskmantest.datahandler.EgressTable;
 import com.charles.taskmantest.datahandler.GeoFenceTable;
 import com.charles.taskmantest.datahandler.IngressTable;
 import com.charles.taskmantest.datahandler.TaskManContentProvider;
-import com.charles.taskmantest.eventhandlers.AreaFence;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.Geofence;
@@ -401,7 +400,8 @@ public class MyMap extends MapFragment implements
             return mGeofenceRequestIntent;
 
         } else {
-            Intent intent = new Intent(getActivity(), AreaFence.class);
+            //Intent intent = new Intent(getActivity(), AreaFence.class);
+            Intent intent = new Intent("com.charles.taskmantest.ACTION_RECEIVE_GEOFENCE");
             return PendingIntent.getService(
                     getActivity(),
                     0,
@@ -430,7 +430,7 @@ public class MyMap extends MapFragment implements
     }
 
     private void updateFences() {
-        if (mLocationClient == null || !mLocationClient.isConnected() || fencesMap.isEmpty()) {
+        if (mLocationClient == null || !mLocationClient.isConnected()) {
             Log.v("Geofence: ", "Not CONNECTED");
             return;
         }
@@ -441,7 +441,8 @@ public class MyMap extends MapFragment implements
 
         while (it.hasNext()) {
             Place p = (Place)it.next();
-            fencesList.add(p.getFence());
+            fencesList.add(p.getEgressFence());
+            fencesList.add(p.getIngressFence());
         }
         mLocationClient.addGeofences(fencesList, mGeofenceRequestIntent, this);
         mLocationClient.disconnect();
@@ -600,11 +601,19 @@ public class MyMap extends MapFragment implements
             this.circle = circle;
         }
 
-        public Geofence getFence() {
+        public Geofence getIngressFence() {
             fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
-            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
+            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
             fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
-            fenceBuilder.setRequestId(Integer.toString(id));
+            fenceBuilder.setRequestId(Integer.toString(id) + ":ingress");
+            return fenceBuilder.build();
+        }
+
+        public Geofence getEgressFence() {
+            fenceBuilder.setCircularRegion(this.latitude, this.longitude, (float)this.radius);
+            fenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+            fenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
+            fenceBuilder.setRequestId(Integer.toString(id) + ":egress");
             return fenceBuilder.build();
         }
     }

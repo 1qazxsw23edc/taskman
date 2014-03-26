@@ -1,10 +1,10 @@
 package com.charles.taskmantest.eventhandlers;
 
-import android.app.IntentService;
 import android.app.LoaderManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -29,7 +29,7 @@ import java.util.List;
  * This is the service that gets ran when you enter or leave a fenced area.  It doesn't do a whole
  * lot right now because I haven't gotten that far.
  */
-public class AreaFence extends IntentService implements
+public class AreaFence extends BroadcastReceiver implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
 
@@ -38,17 +38,15 @@ public class AreaFence extends IntentService implements
     private final int LOADER_ID = 5;
     private enum GTYPE {ENTER, EXIT};
     private GTYPE gType;
+    private Context context;
 
-    public AreaFence() {
+    /*public AreaFence() {
         super("AreaFence");
-    }
-
-    //Heck yeah!  It works!
+    }*/
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        //Toast.makeText(null, "A fence happened", Toast.LENGTH_LONG).show();
-
+    public void onReceive(Context context, Intent intent) {
+        this.context = context;
         if (LocationClient.hasError(intent)) {
             // Get the error code with a static method
             int errorCode = LocationClient.getErrorCode(intent);
@@ -96,7 +94,7 @@ public class AreaFence extends IntentService implements
         if (URL == null) return null;
         Uri places = Uri.parse(URL);
         String[] projection = new String[] {GeoFenceTable.ID, GeoFenceTable.NAME};
-        return new CursorLoader(this, places,projection, null, null, null);
+        return new CursorLoader(context, places,projection, null, null, null);
     }
 
     @Override
@@ -110,10 +108,10 @@ public class AreaFence extends IntentService implements
     }
 
     private void sendNotification(String test) {
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
 
         //Construct a task stack
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
         //Add the main activity to the task stack as the parent
         stackBuilder.addParentStack(MainActivity.class);
@@ -125,7 +123,7 @@ public class AreaFence extends IntentService implements
         PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //Get a nofification builder that's compatible with the platform versions >=4
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 
         //Set the notification contents
         builder.setSmallIcon(R.drawable.add_action)
@@ -134,7 +132,7 @@ public class AreaFence extends IntentService implements
                 .setContentIntent(notificationPendingIntent);
 
         //Get an instance of the Notification manager
-        NotificationManager mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         //Issue the notifications
         mNotificationManager.notify(0, builder.build());
